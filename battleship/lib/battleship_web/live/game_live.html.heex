@@ -1,0 +1,33 @@
+<div class = "game panel">
+    <div class = "you">
+        <div class = "board">
+            <%= for i <- 0..@board_size-1 do %>
+                <%= for j <- 0..@board_size-1 do %>
+                    <div class="cell enabled" id={"#{i}#{j}"}></div>
+                <% end %>
+            <% end %>
+        </div>
+        <div class="fleet">
+            <%= for x <- 0..length(@available_boats) do %>
+                <div class="boat" id={x}></div>
+            <% end %>
+        </div>
+    </div>
+    <div class = "enemy">
+        <div class = "board">
+            <%= for i <- 0..@board_size-1 do %>
+                <%= for j <- 0..@board_size-1 do %>
+                    <div class="cell enabled" id={"#{i}#{j}"}></div>
+                <% end %>
+            <% end %>
+        </div>
+        <div class="fleet">
+            <%= for x <- 0..length(@available_boats) do %>
+                <div class="boat" id={x}></div>
+            <% end %>
+        </div>
+    </div>
+</div>
+<div class="info">
+    <span>CLICK A BOAT!</span>
+</div>
