@@ -1,29 +1,52 @@
 <div class = "game panel">
     <div class = "you">
+        <div class="player_title">
+            <span>YOU</span>
+        </div>
         <div class = "board">
             <%= for i <- 0..@board_size-1 do %>
                 <%= for j <- 0..@board_size-1 do %>
-                    <div class="cell enabled" id={"#{i}#{j}"}></div>
+                    <div class="cell disabled" id={"#{i}#{j}"}>
+                        <%= if i==1 and j==3 do %>
+                        <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
+                        <% else %>
+                            <%= if i==2 and j==3 do %>
+                            <img src={Routes.static_path(@socket, "/images/board/head.png")}">
+                            <% else %>
+                            <img src={Routes.static_path(@socket, "/images/board/water.png")}">
+                            <% end %>
+                        <% end %>
+                    </div>
+
                 <% end %>
             <% end %>
         </div>
         <div class="fleet">
-            <%= for x <- 0..length(@available_boats) do %>
-                <div class="boat" id={x}></div>
+            <%= for x <- 0..length(@available_boats)-1 do %>
+                <div class="boat" id={x} style={"width: #{(@available_boats |> Enum.at(x) |> elem(0))*4}vmin"}>
+                    <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
+                    <img src={Routes.static_path(@socket, "/images/board/body.png")}">
+                    <img src={Routes.static_path(@socket, "/images/board/head.png")}">
+                </div>
             <% end %>
         </div>
     </div>
     <div class = "enemy">
+        <div class="player_title">
+            <span>ENEMY</span>
+        </div>
         <div class = "board">
             <%= for i <- 0..@board_size-1 do %>
                 <%= for j <- 0..@board_size-1 do %>
-                    <div class="cell enabled" id={"#{i}#{j}"}></div>
+                    <div class="cell enabled" id={"#{i}#{j}"}>
+                         <img src={Routes.static_path(@socket, "/images/board/water.png")}">
+                    </div>
                 <% end %>
             <% end %>
         </div>
         <div class="fleet">
-            <%= for x <- 0..length(@available_boats) do %>
-                <div class="boat" id={x}></div>
+            <%= for x <- 0..length(@available_boats)-1 do %>
+                <div class="boat" id={x} style={"width: #{(@available_boats |> Enum.at(x) |> elem(0))*4}vmin"}></div>
             <% end %>
         </div>
     </div>
