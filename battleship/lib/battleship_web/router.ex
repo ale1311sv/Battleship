@@ -18,8 +18,8 @@ defmodule BattleshipWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    live "/game", Main
-    live "/game/:id", Player
+    live "/main", Main
+    live "/main/:id", Player
   end
 
   # Other scopes may use custom stacks.

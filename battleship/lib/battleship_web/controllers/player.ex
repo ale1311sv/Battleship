@@ -22,21 +22,34 @@ defmodule BattleshipWeb.Player do
         {}
       ]
     }
-  }, :setting
+  }, :setting,
+  {}
 }
+
+
+  # def render(assigns) do
+  #   BattleshipWeb.PageView.render("index.html", assigns)
+  # end
 
 @doc """
   Mount the game server
 """
+def render(assigns) do
+  ~H"""
+  <h1> Prueba </h1>
+  <%= @url %>
+  """
+end
 
 def mount(params,_session, socket) do
 
-    socket = assign(socket, :game_name, 0)
     clave = Map.keys(params) |> Enum.at(0)
     valor = Map.get(params, clave)
     prueba = String.to_atom(valor)
 
     socket = assign(socket, :url, valor)
+
+    # if connected?(socket), do: Process.send_after(self(), :update, 1000)
 
     case GenServer.start_link(__MODULE__,@initial_state, name: prueba) do
       {:ok, pid} -> {:ok, pid}
@@ -48,6 +61,18 @@ def mount(params,_session, socket) do
 
     {:ok, socket}
 
+  end
+
+  def handle_call({:join, player_id, pid}, _from, game) do
+    cond do
+      game.player1 =/ nil and game.player2 =/ nil ->
+        {:reply, {:error, "Only two players are allowed"}, game}
+      Enum.member?([game.player1, game.player2], player_id) ->
+        {:reply, {:ok, self()}, game}
+      true ->
+        Process.monitor(pid)
+
+    end
   end
 
     # def init(state) do
@@ -67,12 +92,6 @@ def mount(params,_session, socket) do
     #   end
     end
 
-  def render(assigns) do
-    ~L"""
-    <h1> Hola </h1>
-    <%= @game_name %>
-    """
-  end
 
   def handle_info(:time, state) do
     # GenServer.call()
@@ -83,5 +102,6 @@ def mount(params,_session, socket) do
     # Process.send_after()
   end
 
+  # defp add_player(%__MODULE__)
 
 end
