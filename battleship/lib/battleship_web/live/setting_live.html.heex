@@ -6,7 +6,7 @@
      <div class = "board">
             <%= for i <- 0..@board_size-1 do %>
                 <%= for j <- 0..@board_size-1 do %>
-                    <div class="cell disabled" id={"#{i}#{j}"}>
+                    <div class="cell enabled" id={"#{i}#{j}"}>
                         <%= if i==1 and j==3 do %>
                         <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
                         <% else %>
@@ -22,10 +22,14 @@
         </div>
    <div class="fleet">
             <%= for x <- 0..length(@available_boats)-1 do %>
-                <div class="boat" id={x} style={"height: #{(@available_boats |> Enum.at(x) |> elem(0))*4}vmin"}>
-                    <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
-                    <img src={Routes.static_path(@socket, "/images/board/body.png")}">
-                    <img src={Routes.static_path(@socket, "/images/board/head.png")}">
+                <% size = @available_boats |> Enum.at(x)%>
+                <div class="boat" id={x} style={"height: #{(size)*4}vmin"}>
+                    <%= case size do %>
+                        <% 2 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}><img src={Routes.static_path(@socket, "/images/board/head.png")}>
+                        <% 3 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/head.png")}>
+                        <% 4 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/head.png")}>
+                        <% 5 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/body.png")}><img src={Routes.static_path(@socket, "/images/board/head.png")}>
+                    <% end%>
                 </div>
             <% end %>
         </div>
