@@ -1,0 +1,20 @@
+<%= for boat_length <- @available_boats do %>
+    <div class="boat" phx-click="boat_selected" phx-value-length={boat_length}>
+        <%= case boat_length do %>
+            <% 2 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 3 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 4 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 5 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}
+                        ><img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+        <% end%>
+    </div>
+<% end %>
