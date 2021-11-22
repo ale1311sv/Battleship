@@ -32,6 +32,18 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
+  def insert_boat(_, %{mode: :initial}, _) do
+    {:error, "You cannot insert boats in this state"}
+  end
+
+  def insert_boat(_, %{mode: :p1}, _) do
+    {:error, "You cannot insert boats in this state"}
+  end
+
+  def insert_boat(_, %{mode: :p2}, _) do
+    {:error, "You cannot insert boats in this state"}
+  end
+
   def insert_boat(boat, %{player1: %{boats: boats_list}} = state, pid)
       when state.player1.pid == pid do
     # if is_position_valid?(boat, boats_list) do
@@ -85,7 +97,7 @@ defmodule Battleship.Game do
   # PLAYING MODE
 	@spec make_shot(tuple(), map()) :: {atom(), term()}
 	def make_shot(shot, %{mode: :initial}) do
-  
+
 		# {:error, "You cannot shot in initial mode"}
 	end
 
@@ -111,7 +123,7 @@ defmodule Battleship.Game do
 		# else
 		# 	{:error, state}
 		# end
-	
+
 	end
 
 end
