@@ -11,7 +11,8 @@ defmodule Battleship.Game do
         shots: [],
         pid: nil
       },
-      mode: :initial
+      mode: :initial,
+      available_boats: [5,4,3,3,2]
     }
   end
 
@@ -46,7 +47,7 @@ defmodule Battleship.Game do
 
   def insert_boat(boat, %{player1: %{boats: boats_list}} = state, pid)
       when state.player1.pid == pid do
-    # if is_position_valid?(boat, boats_list) do
+    # if is_position_valid?(boat, boats_list, state.available_boats) do
     #   state =
     #     state
     #     |> put_in([:player1, :boats], state.player1.boats ++ boat)
