@@ -1,22 +1,11 @@
 <% import BattleshipWeb.UIFunctions %>
-<%= for i <- 0..length(@you.available_boats)-1 do %>
-    <% boat_length = Enum.at(@you.available_boats, i) %>
-    <div class="boat" id={i} phx-click="boat_selected" phx-value-length={boat_length}>
-        <%= case boat_length do %>
-            <% 2 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
-            <% 3 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
-            <% 4 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
-            <% 5 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/body.png")}
-                        ><img src={Routes.static_path(@socket, "/images/board/body.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
-                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
-        <% end%>
-    </div>
+<%= for boat_id <- 0..length(@you.available_boats)-1 do %>
+  <% boat_length = Enum.at(@you.available_boats, boat_id) %>
+  <div class="boat" id={boat_id} phx-click="boat_selected" phx-value-length={boat_length}>
+    <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
+    <%= for _body <- List.duplicate(:body, boat_length-2) do %>
+      <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+    <% end %>
+    <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+  </div>
 <% end %>

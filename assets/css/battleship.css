@@ -48,6 +48,43 @@ header {
   font-family: 'KimiHimi';
 }
 
+/* CELLS */
+
+
+.cell {
+  background-size: 5vmin;
+}
+
+/*.cell.secret */
+
+.cell.water {
+  background-image: url("/images/board/water.png");
+}
+
+.cell.boat_tail {
+  background-image: url("/images/board/tail.png");
+}
+
+.cell.boat_body {
+  background-image: url("/images/board/body.png");
+}
+
+.cell.boat_head {
+  background-image: url("/images/board/head.png");
+}
+
+.cell.enabled:hover {
+  background-color: green;
+}
+
+.cell.enabled:active {
+  background-color: #ffffff99;
+}
+
+.cell.disabled:hover {
+  background-color: red;
+}
+
 /* GAME PANEL */
 
 .player_title {
@@ -137,18 +174,6 @@ header {
   content: "";
   display: block;
   padding-bottom: 100%;
-}
-
-.cell.enabled:hover {
-  background-color: green;
-}
-
-.cell.enabled:active {
-  background-color: #ffffff99;
-}
-
-.cell.disabled:hover {
-  background-color: red;
 }
 
 

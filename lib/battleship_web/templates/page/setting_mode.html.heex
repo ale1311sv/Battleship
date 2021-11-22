@@ -7,16 +7,7 @@
   <div class = "board">
     <%= for row <- 0..9 do %>
       <%= for column <- 0..9 do %>
-        <div class="cell enabled" id={"#{row}#{column}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
-          <%= if row==1 and column==3 do %>
-            <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
-          <% else %>
-            <%= if row==2 and column==3 do %>
-              <img src={Routes.static_path(@socket, "/images/board/head.png")}">
-            <% else %>
-              <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-            <% end %>
-          <% end %>
+        <div class={"cell #{is_valid?(row, column, assigns)} #{whats_in_cell(row, column, assigns)}"} id={"#{row}#{column}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div>
       <% end %>
     <% end %>

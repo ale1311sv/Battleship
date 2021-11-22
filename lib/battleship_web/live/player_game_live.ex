@@ -19,7 +19,7 @@ use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
         boats: [],
         shots: [],
         first_cell_selected: {},
-        boat_selected: nil
+        boat_selected: 1
       },
       enemy: %{
         boats: [],
