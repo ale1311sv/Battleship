@@ -16,6 +16,7 @@ defmodule Battleship.Game do
     }
   end
 
+  @spec join(pid(), map()) :: tuple()
   def join(pid, %{player1: %{pid: nil}} = state) do
     {:ok, put_in(state, [:player1, :pid], pid)}
   end
@@ -33,18 +34,7 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
-  def insert_boat(_, %{mode: :initial}, _) do
-    {:error, "You cannot insert boats in this state"}
-  end
-
-  def insert_boat(_, %{mode: :p1}, _) do
-    {:error, "You cannot insert boats in this state"}
-  end
-
-  def insert_boat(_, %{mode: :p2}, _) do
-    {:error, "You cannot insert boats in this state"}
-  end
-
+  @spec insert_boat(list(), map(), pid()) :: tuple()
   def insert_boat(boat, %{player1: %{boats: boats_list}} = state, pid)
       when state.player1.pid == pid do
     # if is_position_valid?(boat, boats_list, state.available_boats) do
@@ -72,7 +62,7 @@ defmodule Battleship.Game do
 
   def insert_boat(boat, %{player2: %{boats: boats_list}} = state, pid)
       when state.player2.pid == pid do
-    # if is_position_valid?(boat, boats_list) do
+    # if is_position_valid?(boat, boats_list, state.available_boats) do
     #   state =
     #     state
     #     |> put_in([:player1, :boats], state.player2.boats ++ boat)
@@ -98,7 +88,6 @@ defmodule Battleship.Game do
   # PLAYING MODE
 	@spec make_shot(tuple(), map()) :: {atom(), term()}
 	def make_shot(shot, %{mode: :initial}) do
-
 		# {:error, "You cannot shot in initial mode"}
 	end
 
@@ -107,7 +96,7 @@ defmodule Battleship.Game do
 	end
 
 	def make_shot(shot, %{mode: :p1} = state) do
-		# if shot_valid?(shot, state.player1.shots) do
+	  # if shot_valid?(shot, state.player1.shots) do
 		# 	state = put_in(state, [:player1, :shots], [shot] ++ state.player1.shots)
 		# 	conseq = conseq_shots(state.player1.shots, state.player2.boats)
 		# 	{conseq, state}
@@ -124,7 +113,6 @@ defmodule Battleship.Game do
 		# else
 		# 	{:error, state}
 		# end
-
 	end
 
 end
