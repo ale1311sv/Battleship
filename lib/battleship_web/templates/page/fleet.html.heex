@@ -1,0 +1,22 @@
+<% import BattleshipWeb.UIFunctions %>
+<%= for i <- 0..length(@you.available_boats)-1 do %>
+    <% boat_length = Enum.at(@you.available_boats, i) %>
+    <div class="boat" id={i} phx-click="boat_selected" phx-value-length={boat_length}>
+        <%= case boat_length do %>
+            <% 2 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 3 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 4 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+            <% 5 -> %> <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}
+                        ><img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/body.png")}>
+                        <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+        <% end%>
+    </div>
+<% end %>

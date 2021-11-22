@@ -1,0 +1,13 @@
+<% import BattleshipWeb.UIFunctions %>
+<%= case @mode do %>
+  <% :not_allowed                 -> %> <%= render("not_allowed_mode.html", assigns) %>
+  <% :setting                     -> %> <%= render("setting_mode.html", assigns)  %>
+  <% :setting_boat_selected       -> %> <%= render("setting_mode.html", assigns) %>
+  <% :setting_first_cell_selected -> %> <%= render("setting_mode.html", assigns) %>
+  <% :ready                       -> %> <%= render("setting_mode.html", assigns) %>
+  <% :you                         -> %> <%= render("game_mode.html", assigns) %>
+  <% :enemy                       -> %> <%= render("game_mode.html", assigns) %>
+  <% :you_won                     -> %> <%= render("game_mode.html", assigns) %>
+  <% :you_lost                    -> %> <%= render("game_mode.html", assigns) %>
+
+<% end %>
