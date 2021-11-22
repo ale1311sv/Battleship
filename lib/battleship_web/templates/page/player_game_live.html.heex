@@ -1,85 +1,13 @@
-<!-- SETTING MODE -->
-<% import BattleshipWeb.UIFunctions  %>
-<header>
-  <span>WELCOME TO BATTLESHIP</span>
-</header>
+<% import BattleshipWeb.UIFunctions %>
+<%= case @mode do %>
+  <% :not_allowed                 -> %> <%= render("not_allowed_mode.html", assigns) %>
+  <% :setting                     -> %> <%= render("setting_mode.html", assigns)  %>
+  <% :setting_boat_selected       -> %> <%= render("setting_mode.html", assigns) %>
+  <% :setting_first_cell_selected -> %> <%= render("setting_mode.html", assigns) %>
+  <% :ready                       -> %> <%= render("setting_mode.html", assigns) %>
+  <% :you                         -> %> <%= render("game_mode.html", assigns) %>
+  <% :enemy                       -> %> <%= render("game_mode.html", assigns) %>
+  <% :you_won                     -> %> <%= render("game_mode.html", assigns) %>
+  <% :you_lost                    -> %> <%= render("game_mode.html", assigns) %>
 
-<div class = "setting panel">
-  <div class = "board">
-    <%= for row <- 0..9 do %>
-      <%= for column <- 0..9 do %>
-        <div class="cell enabled" id={"#{row}#{column}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
-          <%= if row==1 and column==3 do %>
-            <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
-          <% else %>
-            <%= if row==2 and column==3 do %>
-              <img src={Routes.static_path(@socket, "/images/board/head.png")}">
-            <% else %>
-              <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-            <% end %>
-          <% end %>
-        </div>
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="fleet">
-    <%= render("fleet.html", assigns) %>
-  </div>
-
-</div>
-
-<div class="info">
-  <span>CLICK A BOAT!</span>
-</div>
-
-<!-- GAME MODE -->
-
-<div class = "game panel">
-    <div class = "you">
-        <div class="player_title">
-            <span>YOU</span>
-        </div>
-        <div class = "board">
-            <%= for row <- 0..9 do %>
-                <%= for column <- 0..9 do %>
-                    <div class="cell disabled" id={"#{row}#{column}"}>
-                        <%= if row==1 and column==3 do %>
-                        <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
-                        <% else %>
-                            <%= if row==2 and column==3 do %>
-                            <img src={Routes.static_path(@socket, "/images/board/head.png")}">
-                            <% else %>
-                            <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-                            <% end %>
-                        <% end %>
-                    </div>
-
-                <% end %>
-            <% end %>
-        </div>
-        <div class="fleet">
-            <%=  render("fleet.html", assigns) %>
-        </div>
-    </div>
-    <div class = "enemy">
-        <div class="player_title">
-            <span>ENEMY</span>
-        </div>
-        <div class = "board">
-            <%= for row <- 0..9 do %>
-                <%= for column <- 0..9 do %>
-                    <div class="cell enabled" id={"#{row}#{column}"}>
-                         <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-                    </div>
-                <% end %>
-            <% end %>
-        </div>
-        <div class="fleet">
-            <%=  render("fleet.html", assigns) %>
-        </div>
-    </div>
-</div>
-<div class="info">
-    <span>CLICK A BOAT!</span>
-</div>
+<% end %>

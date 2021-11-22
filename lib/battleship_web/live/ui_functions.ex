@@ -1,5 +1,5 @@
 defmodule BattleshipWeb.UIFunctions do
-  def lola(param) do
-    "Lola #{param}"
+  def example(param) do
+    "Example #{param}"
   end
 end

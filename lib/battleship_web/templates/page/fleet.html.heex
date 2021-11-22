@@ -1,3 +1,4 @@
+<% import BattleshipWeb.UIFunctions %>
 <%= for boat_length <- @available_boats do %>
     <div class="boat" id="TODOOOOOOOXXXXXXX" phx-click="boat_selected" phx-value-length={boat_length}>
         <%= case boat_length do %>
