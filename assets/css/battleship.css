@@ -31,7 +31,7 @@ html {
   padding: 0 2.0rem;
   position: relative;
   min-width: 80vw;
-  min-height: 99vh;
+  height: 99vh;
 }
 select {
   width: auto;
@@ -64,7 +64,7 @@ header {
 .game {
   flex: 1 0 auto;
   display: flex;
-  align-items: center2;
+  align-items: center;
   flex-direction: row;
   justify-content: space-around;
   margin: 3vmin;
