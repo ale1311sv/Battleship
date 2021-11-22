@@ -1,5 +1,5 @@
 <%= for boat_length <- @available_boats do %>
-    <div class="boat" phx-click="boat_selected" phx-value-length={boat_length}>
+    <div class="boat" id="TODOOOOOOOXXXXXXX" phx-click="boat_selected" phx-value-length={boat_length}>
         <%= case boat_length do %>
             <% 2 -> %> <img src={Routes.static_path(@socket, "/images/board/tail_with_sail.png")}>
                         <img src={Routes.static_path(@socket, "/images/board/head.png")}>
