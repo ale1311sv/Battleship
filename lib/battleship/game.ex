@@ -85,6 +85,7 @@ defmodule Battleship.Game do
   # PLAYING MODE
 	@spec make_shot(tuple(), map()) :: {atom(), term()}
 	def make_shot(shot, %{mode: :initial}) do
+  
 		# {:error, "You cannot shot in initial mode"}
 	end
 
@@ -110,6 +111,7 @@ defmodule Battleship.Game do
 		# else
 		# 	{:error, state}
 		# end
+	
 	end
 
 end

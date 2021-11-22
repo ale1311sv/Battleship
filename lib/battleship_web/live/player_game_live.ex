@@ -1,11 +1,11 @@
 defmodule BattleshipWeb.PlayerGameLive do
-  use Phoenix.LiveView
+use Phoenix.LiveView
 
   @spec new :: %{
           enemy: %{boats: [], shots: []},
           mode: :setting,
           you: %{
-            avalaible_boats: [1 | 2 | 3 | 4 | 5, ...],
+            available_boats: [1 | 2 | 3 | 4 | 5, ...],
             boat_selected: nil,
             boats: [],
             first_cell_selected: {},
@@ -15,7 +15,7 @@ defmodule BattleshipWeb.PlayerGameLive do
   def new() do
     %{
       you: %{
-        avalaible_boats: [5, 4, 3, 3, 2, 1],
+        available_boats: [5, 4, 3, 3, 2],
         boats: [],
         shots: [],
         first_cell_selected: {},
@@ -35,7 +35,6 @@ defmodule BattleshipWeb.PlayerGameLive do
 
   def mount(_params, _session, socket) do
     {:ok, assign(socket, new())}
-    IO.inspect(socket)
   end
 
   @spec handle_event(<<_::104>>, map, %{
@@ -45,5 +44,4 @@ defmodule BattleshipWeb.PlayerGameLive do
   def handle_event("boat_selected", %{"length" => length}, socket) do
     {:noreply, socket}
   end
-
 end
