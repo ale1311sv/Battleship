@@ -18,6 +18,7 @@ defmodule BattleshipWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    live "/:id", PlayerGameLive
   end
 
   # Other scopes may use custom stacks.

@@ -15,7 +15,6 @@ defmodule BattleshipWeb.PlayerGameLive do
   def new() do
     %{
       you: %{
-        avalaible_boats: [5, 4, 3, 3, 2, 1],
         boats: [],
         shots: [],
         first_cell_selected: {},
@@ -33,17 +32,31 @@ defmodule BattleshipWeb.PlayerGameLive do
     BattleshipWeb.PageView.render("player_game_live.html", assigns)
   end
 
+  @spec mount(any, any, any) :: any
+
   def mount(_params, _session, socket) do
     {:ok, assign(socket, new())}
     IO.inspect(socket)
   end
 
+  # - Events for setting state -------------------------
+
   @spec handle_event(<<_::104>>, map, %{
           :assigns => atom | %{:avalaible_boats => list, optional(any) => any},
           optional(any) => any
         }) :: {:noreply, map}
+
   def handle_event("boat_selected", %{"length" => length}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("cell_selected", %{"row" => row, "column" => column}, socket) do
+    {:noreply, socket}
+  end
+
+  # - Events for game state --------------------------
+
+  def handle_event(_, unsigned_params, socket) do
   end
 
 end
