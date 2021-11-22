@@ -1,15 +1,19 @@
 defmodule Battleship.Opsetting do
   
+  @type cell :: {integer, integer}
+  @type boat :: [cell]
+  
+
   @doc """
     This function checks the validity of intended boat location in the player's game table
   """
   @spec is_position_valid?(boat, list, list) :: boolean
   
-  def is_position_valid?(boat, [], available_boats) do
+  def is_position_valid?(boat, [], _available_boats) do
     is_boat_on_grid?(boat)
   end
 
-  def is_position_valid?(boat, [set_boat], available_boats) do
+  def is_position_valid?(boat, [set_boat], _available_boats) do
     if is_boat_on_grid?(boat) do 
       Enum.filter(boat, &(!Enum.member?( illegal_cells( set_boat), &1) ) )
       |> length() == length(boat)
@@ -39,18 +43,31 @@ defmodule Battleship.Opsetting do
   #SUPPORT FUNCTIONS 
 
   @doc """
+  Function to check if cell is inside grid
+  """
+  @spec is_cell_valid?(cell) :: boolean
+
+  def is_cell_valid?({x,y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
+
+  @doc """
   Function to check if cells of a boat are inside grid
   """
   @spec is_boat_on_grid?(boat) :: boolean
   
   def is_boat_on_grid?(boat) do
-    for i <- 0 .. length(boat) - 1 do
-      Enum.at( boat, i)
-      |> Tuple.to_list()
-      |> Enum.filter(&(&1 < @table_size))
-      |> length() == 2
+    Enum.all?( boat, &( is_cell_valid?(&1) ) )
+  end
+
+  @doc """
+  Function which returns list of adjacent cells for a given cell
+  """
+  @spec adjacent_cells(cell) :: [cell]
+
+  def adjacent_cells({x,y}) do
+    for i <- x - 1.. x + 1, j <- y - 1 .. y + 1 do
+      if i == x or j == y, do: {i, j}
     end
-    |> Enum.filter(&( &1 == false )) == []
+    |> Enum.filter( &( !is_nil(&1) ) ) 
   end
 
 
@@ -60,13 +77,14 @@ defmodule Battleship.Opsetting do
   @spec illegal_cells(boat) :: [cell]
   
   def illegal_cells(set_boat) do
-    illegal = set_boat
+    illegal = []
     for {x,y} <- set_boat do
-      illegal ++ [ { x + 1, y }, { x - 1, y }, {x, y + 1 }, {x, y - 1}, {x + 1, y + 1}, {x - 1, y - 1}, {x + 1, y - 1}, {x - 1, y + 1} ]
+      illegal ++ adjacent_cells({x,y})
     end
     |> List.flatten()
     |> Enum.uniq()
     |> Enum.sort()
+    |> Enum.filter(&( is_cell_valid?(&1) ) )
   end
 
 
