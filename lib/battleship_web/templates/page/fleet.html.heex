@@ -1,7 +1,6 @@
-<% import BattleshipWeb.UIFunctions %>
 <%= for boat_id <- 0..length(@you.available_boats)-1 do %>
   <% boat_length = Enum.at(@you.available_boats, boat_id) %>
-  <div class="boat" id={boat_id} phx-click="boat_selected" phx-value-length={boat_length}>
+  <div class="boat" id={boat_id} phx-click="boat_selected" phx-value-id={boat_id}>
     <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
     <%= for _body <- List.duplicate(:body, boat_length-2) do %>
       <img src={Routes.static_path(@socket, "/images/board/body.png")}>

@@ -1,17 +1,6 @@
 defmodule BattleshipWeb.PlayerGameLive do
 use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
 
-  @spec new :: %{
-          enemy: %{boats: [], shots: []},
-          mode: :setting,
-          you: %{
-            available_boats: [1 | 2 | 3 | 4 | 5, ...],
-            boat_selected: nil,
-            boats: [],
-            first_cell_selected: {},
-            shots: []
-          }
-        }
   def new() do
     %{
       you: %{
@@ -25,7 +14,8 @@ use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
         boats: [],
         shots: []
       },
-      mode: :setting
+      mode: :setting,
+      submode: :basic
     }
   end
 
@@ -37,10 +27,6 @@ use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
     {:ok, assign(socket, new())}
   end
 
-  @spec handle_event(<<_::104>>, map, %{
-          :assigns => atom | %{:avalaible_boats => list, optional(any) => any},
-          optional(any) => any
-        }) :: {:noreply, map}
   def handle_event("boat_selected", %{"length" => length}, socket) do
     {:noreply, socket}
   end

@@ -1,4 +1,3 @@
-<% import BattleshipWeb.UIFunctions %>
 <header>
   <span>WELCOME TO BATTLESHIP </span>
 </header>
@@ -7,7 +6,7 @@
   <div class = "board">
     <%= for row <- 0..9 do %>
       <%= for column <- 0..9 do %>
-        <div class={"cell #{is_valid?(row, column, assigns)} #{whats_in_cell(row, column, assigns)}"} id={"#{row}#{column}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
+        <div class={"cell #{clickable_state({row, column}, @you.boats, @you.available_boats, @you.boat_selected)} #{whats_in_cell({row, column}, @you.boats, @enemy.shots)}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div>
       <% end %>
     <% end %>

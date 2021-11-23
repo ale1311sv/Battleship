@@ -73,6 +73,10 @@ header {
   background-image: url("/images/board/head.png");
 }
 
+.cell.horizontal {
+  transform:rotate(270deg);
+}
+
 .cell.enabled:hover {
   background-color: green;
 }
