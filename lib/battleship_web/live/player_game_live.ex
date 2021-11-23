@@ -4,11 +4,11 @@ use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
   def new() do
     %{
       you: %{
-        available_boats: [5, 4, 3, 3, 2],
+        boats_left: [5, 4, 3, 3, 2],
         boats: [],
         shots: [],
         first_cell_selected: {},
-        boat_selected: 1
+        boat_selected: nil
       },
       enemy: %{
         boats: [],

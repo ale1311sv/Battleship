@@ -1,10 +1,15 @@
-<%= for boat_id <- 0..length(@you.available_boats)-1 do %>
-  <% boat_length = Enum.at(@you.available_boats, boat_id) %>
-  <div class="boat" id={boat_id} phx-click="boat_selected" phx-value-id={boat_id}>
+<%= for length <- Enum.uniq(@you.boats_left) do %>
+  <div class={"boat #{if @you.boat_selected == length, do: "selected"}"} style={"max-height: #{4*length}vmin; max-width: #{4*length}vmin"} phx-click="boat_selected" phx-value-id={length}>
+    
+    <span><b><%= Enum.frequencies(@you.boats_left)[length] %></b></span> <!-- Show the number of boats left of that length -->
+    
     <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
-    <%= for _body <- List.duplicate(:body, boat_length-2) do %>
+
+    <%= for _body <- List.duplicate(:body, length-2) do %>
       <img src={Routes.static_path(@socket, "/images/board/body.png")}>
     <% end %>
+
     <img src={Routes.static_path(@socket, "/images/board/head.png")}>
+
   </div>
 <% end %>

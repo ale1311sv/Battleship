@@ -1,7 +1,7 @@
 defmodule BattleshipWeb.DrawHelpers do
   @moduledoc """
   This is the module where all the necessary functions for processing data and drawing
-  elements in the canvas. The majority of them return strings that will be added to
+  elements in the canvas are located. The majority of them return strings that will be added to
   element CSS classes.
   """
 
@@ -29,11 +29,9 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "enabled" or "disabled"
   """
-  @spec clickable_state(cell, [boat], list(non_neg_integer()), non_neg_integer()) :: atom()
-  def clickable_state({_row, _column}, _boats, available_boats, boat_selected) do
-    _boat_selected_length = available_boats
-                           |> Enum.at(boat_selected)
-
+  @spec clickable(cell, [boat], list(non_neg_integer()), non_neg_integer()) :: atom()
+  def clickable({_row, _column}, _boats, available_boats, boat_selected) do
+    #boat_selected_length = available_boats |> Enum.at(boat_selected)
     # Ops.is_second_cell?(boat_selected_length, {row, column}, assigns.you.boats)
   end
 
@@ -46,10 +44,10 @@ defmodule BattleshipWeb.DrawHelpers do
   Returns '"BOAT_PART ALIGNMENT"'', being:
   - BOAT_PART: boat_head, boat_body or boat_tail
   """
-  @spec whats_in_cell(cell, [boat], [cell]) :: String.t()
-  def whats_in_cell({row, column}, _boats, _shots) do
-    # cell = Ops.get_cell(row, column, row)
-    cell = get_cell(row, column)
+  @spec content(cell, [boat], [cell]) :: String.t()
+  def content({row, column}, _boats, _shots) do
+    # cell = Ops.what_is_cell(row, column, row)
+    cell = what_is_cell(row, column)
 
     if cell == :water do
       "water"
@@ -57,8 +55,8 @@ defmodule BattleshipWeb.DrawHelpers do
       if surrounding_boat_cells(row, column) == 2 do
         "boat_body #{alignment(row, column)}"
       else
-        if (get_cell(row - 1, column) == :water and get_cell(row + 1, column) == :boat) or
-             (get_cell(row, column - 1) == :water and get_cell(row, column + 1) == :boat) do
+        if (what_is_cell(row - 1, column) == :water and what_is_cell(row + 1, column) == :boat) or
+             (what_is_cell(row, column - 1) == :water and what_is_cell(row, column + 1) == :boat) do
           "boat_tail #{alignment(row, column)}"
         else
           "boat_head #{alignment(row, column)}"
@@ -82,7 +80,7 @@ defmodule BattleshipWeb.DrawHelpers do
   # Returns the number of boat in the list of cells given
   defp count_boat_in_cells(acc, []), do: acc
   defp count_boat_in_cells(acc, [{row, column} | t]) do
-    if get_cell(row, column) == :boat do
+    if what_is_cell(row, column) == :boat do
       count_boat_in_cells(acc + 1, t)
     else
       count_boat_in_cells(acc, t)
@@ -90,7 +88,7 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Trial function that imitates the Ops API
-  defp get_cell(row, column) do
+  defp what_is_cell(row, column) do
     case {row, column} do
       {9, 5} -> :boat
       {9, 6} -> :boat
@@ -101,6 +99,9 @@ defmodule BattleshipWeb.DrawHelpers do
       {1, 1} -> :boat
       {1, 2} -> :boat
       {1, 3} -> :boat
+      {3, 1} -> :boat
+      {4, 1} -> :boat
+      {5, 1} -> :boat
       {_, _} -> :water
     end
   end

@@ -1,12 +1,13 @@
 <header>
-  <span>WELCOME TO BATTLESHIP </span>
+  <div class="top">WELCOME TO</div>
+  <div class="bottom">BATTLESHIP</div>
 </header>
 
 <div class = "setting panel">
   <div class = "board">
     <%= for row <- 0..9 do %>
       <%= for column <- 0..9 do %>
-        <div class={"cell #{clickable_state({row, column}, @you.boats, @you.available_boats, @you.boat_selected)} #{whats_in_cell({row, column}, @you.boats, @enemy.shots)}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
+        <div class={"cell #{clickable({row, column}, @you.boats, @you.boats_left, @you.boat_selected)} #{content({row, column}, @you.boats, @enemy.shots)} #{if @you.first_cell_selected == {row, column}, do: "selected"}"} phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div>
       <% end %>
     <% end %>
@@ -15,9 +16,12 @@
   <div class="fleet">
     <%= render("fleet.html", assigns) %>
   </div>
-
 </div>
 
 <div class="info">
-  <span>CLICK A BOAT!</span>
+  <%= cond do %>
+    <% is_nil(@you.boat_selected) -> %> <span>CLICK A BOAT!</span> <!-- NO CLICKS/SECOND CELL CLICKED --> 
+    <% @you.first_cell_selected == {} -> %> <span>CLICK A CELL!</span>  <!-- BOAT CLICKED -->
+    <% @you.first_cell_selected != {} -> %> <span>SET YOUR BOAT CLICKING ANOTHER CELL!</span>  <!-- FIRST CELL CLICKED --> 
+  <% end %>
 </div>
