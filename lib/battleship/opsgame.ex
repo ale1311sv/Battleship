@@ -55,12 +55,7 @@ defmodule Battleship.Operationsgame do
   end
 
   def is_position_valid?(boat, list_boats = [set_boat | tail], available_boats) do
-    if is_boat_available?(boat, list_boats, available_boats) do
-      is_position_valid?(boat, [set_boat], available_boats) &&
-        is_position_valid?(boat, tail, available_boats)
-    else
-      false
-    end
+    is_position_valid?(boat, [set_boat], available_boats) && is_position_valid?(boat, tail, available_boats)
   end
 
   @doc """
@@ -127,7 +122,7 @@ defmodule Battleship.Operationsgame do
   end
 
   @doc """
-  Function to consider the illegal cells to locate boats given a 
+  Function to consider the illegal cells to locate boats given a boat
   """
   @spec illegal_cells(boat) :: [cell]
 
