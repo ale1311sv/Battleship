@@ -30,7 +30,7 @@ defmodule BattleshipWeb.DrawHelpers do
   Returns "enabled" or "disabled"
   """
   @spec clickable(cell, [boat], list(non_neg_integer()), non_neg_integer()) :: atom()
-  def clickable({_row, _column}, _boats, available_boats, boat_selected) do
+  def clickable({_row, _column}, _boats, _available_boats, _boat_selected) do
     #boat_selected_length = available_boats |> Enum.at(boat_selected)
     # Ops.is_second_cell?(boat_selected_length, {row, column}, assigns.you.boats)
   end
@@ -73,11 +73,13 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Returns the number of surrounding boat cells of a specific cell (row 'i', column 'j')
+  @spec surrounding_boat_cells(non_neg_integer(), non_neg_integer()) :: non_neg_integer()
   defp surrounding_boat_cells(i, j) do
     count_boat_in_cells(0, [{i - 1, j}, {i + 1, j}, {i, j - 1}, {i, j + 1}])
   end
 
   # Returns the number of boat in the list of cells given
+  @spec count_boat_in_cells(non_neg_integer(), list(cell)) :: non_neg_integer()
   defp count_boat_in_cells(acc, []), do: acc
   defp count_boat_in_cells(acc, [{row, column} | t]) do
     if what_is_cell(row, column) == :boat do
@@ -88,6 +90,7 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Trial function that imitates the Ops API
+  @spec what_is_cell(non_neg_integer(), non_neg_integer()) :: atom()
   defp what_is_cell(row, column) do
     case {row, column} do
       {9, 5} -> :boat
