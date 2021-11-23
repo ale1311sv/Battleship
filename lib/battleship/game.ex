@@ -90,7 +90,7 @@ defmodule Battleship.Game do
     {message, state} = insert_shot(shot, state)
     cond do
       message == :end -> {message, Map.put(state, :mode, :game_over)}
-      message == :water -> {message, Map.put(state, :mode, :p2)}
+      message == :miss -> {message, Map.put(state, :mode, :p2)}
       true -> {message, state}
     end
   end
@@ -100,7 +100,7 @@ defmodule Battleship.Game do
     {message, state} = insert_shot(shot, state)
     cond do
       message == :end -> {message, Map.put(state, :mode, :game_over)}
-      message == :water -> {message, Map.put(state, :mode, :p1)}
+      message == :miss -> {message, Map.put(state, :mode, :p1)}
       true -> {message, state}
     end
   end
