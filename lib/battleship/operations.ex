@@ -27,7 +27,7 @@ defmodule Battleship.Operations do
     # end
   end
 
-  def is_position_valid?(boat, list_boats = [set_boat | tail], available_boats) do
+  def is_position_valid?(boat, [set_boat | tail], available_boats) do
     is_position_valid?(boat, [set_boat], available_boats) &&
       is_position_valid?(boat, tail, available_boats)
   end
@@ -172,16 +172,12 @@ defmodule Battleship.Operations do
 
   # SUPPORT FUNCTIONS
 
-  @doc """
-  Function to check if cell is inside grid
-  """
+  # Function to check if cell is inside grid
   @spec is_cell_valid?(cell) :: boolean
 
   defp is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
 
-  @doc """
-  Function which returns list of adjacent cells for a given cell
-  """
+  # Function which returns list of adjacent cells for a given cell
   @spec adjacent_cells(cell) :: [cell]
 
   defp adjacent_cells({x, y}) do
@@ -191,9 +187,7 @@ defmodule Battleship.Operations do
     |> Enum.filter(&(!is_nil(&1)))
   end
 
-  @doc """
-  Function to obtain illegal cells to locate a new boat given boats already located
-  """
+  # Function to obtain illegal cells to locate a new boat given boats already located
   @spec illegal_cells([boat]) :: [cell]
 
   defp illegal_cells([set_boat]) do
@@ -210,27 +204,21 @@ defmodule Battleship.Operations do
 
   defp illegal_cells([h | t]), do: illegal_cells([h]) ++ illegal_cells(t)
 
-  @doc """
-  Function to check if cells of a boat are inside grid
-  """
+  # Function to check if cells of a boat are inside grid
   @spec is_boat_on_grid?(boat) :: boolean
 
   defp is_boat_on_grid?(boat) do
     Enum.all?(boat, &is_cell_valid?(&1))
   end
 
-  @doc """
-  Function that returns the available boats for player to locate by their length
-  """
+  # Function that returns the available boats for player to locate by their length
   @spec boats_left([boat], list) :: boolean
 
   defp boats_left(list_boats, available_boats) do
     available_boats -- Enum.map(list_boats, &length(&1))
   end
 
-  @doc """
-  Function to check if boat is available
-  """
+  # Function to check if boat is available
   @spec is_boat_available?(boat, [boat], list) :: boolean
 
   defp is_boat_available?(boat, list_boats, available_boats) do
@@ -239,18 +227,14 @@ defmodule Battleship.Operations do
     |> Enum.member?(length(boat))
   end
 
-  @doc """
-  Function to set the length of the future boat
-  """
+  # Function to set the length of the future boat
   @spec distance_btw_cells({}, {}) :: integer
 
   defp distance_btw_cells(cell1, celln) do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end
 
-  @doc """
-  Function to check if LEGAL cells are vertical or horizontal aligned
-  """
+  # Function to check if LEGAL cells are vertical or horizontal aligned
   @spec cells_alignment({}, {}) :: atom
 
   defp cells_alignment(cell1, celln) do
@@ -260,9 +244,7 @@ defmodule Battleship.Operations do
     end
   end
 
-  @doc """
-  Function which creats horizontal boats invoked by create_boat
-  """
+  # Function which creats horizontal boats invoked by create_boat
   @spec create_boat_horizontal({}, {}) :: [{}]
 
   defp create_boat_horizontal(cell1, celln) do
@@ -277,9 +259,7 @@ defmodule Battleship.Operations do
     for j <- y..(y + n), do: {x, j}
   end
 
-  @doc """
-  Function which creats vertical boats invoked by create_boat
-  """
+  # Function which creats vertical boats invoked by create_boat
   @spec create_boat_vertical({}, {}) :: [{}]
 
   defp create_boat_vertical(cell1, celln) do
@@ -294,16 +274,12 @@ defmodule Battleship.Operations do
     for i <- x..(x + y + n), do: {i, y}
   end
 
-  @doc """
-  Function to check if one shot missed
-  """
+  # Function to check if one shot missed
   @spec did_it_miss?(cell, [boat]) :: boolean
 
   defp did_it_miss?(shot, boats), do: not Enum.member?(List.flatten(boats), shot)
 
-  @doc """
-  Function which returns the remaining cells of boats, the ones unharmed by shots
-  """
+  # Function which returns the remaining cells of boats, the ones unharmed by shots
   @spec effects_shots_on_boats([cell], [boat]) :: [[cell]]
 
   defp effects_shots_on_boats(shots, [boat]), do: [boat -- shots]
