@@ -7,7 +7,7 @@ use Phoenix.LiveView
         available_boats: [5, 4, 3, 3, 2],
         boats: [],
         shots: [],
-        first_cell_selected: {},
+        first_cell_selected: nil,
         boat_selected: nil
       },
       enemy: %{
@@ -24,23 +24,30 @@ use Phoenix.LiveView
   end
 
   def mount(_params, _session, socket) do
-
     {:ok, assign(socket, new())}
   end
 
   # - Events for setting state -------------------------
 
-  def handle_event("boat_selected", %{"boat_length" => boat_length}, socket) do
-    new_socket = assign(socket, %{boat_selected: boat_length})
+  def handle_event("boat_selected", %{"length" => boat_length}, socket) do
+    new_socket = update(socket, :you, &(Map.put(&1, :boat_selected, String.to_integer(boat_length))))
     {:noreply, new_socket}
-    # :available_boats, List.delete(socket.assigns.available_boats, String.to_integer(length)))}
+    # List.delete(socket.assigns.available_boats, String.to_integer(length)))}
   end
 
   def handle_event("cell_selected", %{"row" => row, "column" => column}, socket) do
-    cell = {row, column}
+    cell = {String.to_integer(row), String.to_integer(column)}
+    first_cell = socket.assigns.you.first_cell_selected
+    length_selection = socket.assigns.you.boat_selected
     cond do
-      socket.assigns.you.first_cell_selected == {} -> first_cell_selected(cell, socket)
-      socket.assigns.you.first_cell_selected == cell -> second_cell_selected(cell, socket)
+      is_nil(first_cell) -> first_cell_selected(cell, socket)
+      not is_nil(first_cell) ->
+        cond do
+          (not is_cell_valid?(first_cell)) || (not is_cell_valid?(cell)) -> {:reply, "One of the cells is out of margin"}
+          (not is_it_a_boat?(first_cell, cell)) -> {:reply, "Cells selection is illegal"}
+          not was_boat_selection_right?(first_cell, cell, length_selection) -> {:reply, "Your boat selection was not right"}
+          true -> second_cell_selected(cell, socket)
+        end
     end
     {:noreply, socket}
   end
@@ -130,7 +137,7 @@ use Phoenix.LiveView
   Function when is selected the first cell
   """
   defp first_cell_selected(cell, socket) do
-    assign(socket, %{first_cell_selected: cell})
+    update(socket, :you, &(Map.put(&1, :first_cell_selected, cell)))
   end
 
   @doc """
