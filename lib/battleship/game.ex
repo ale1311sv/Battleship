@@ -1,5 +1,21 @@
 defmodule Battleship.Game do
   alias Battleship.Operationsgame
+
+  @type cell :: tuple()
+  @type boat :: [[cell()]]
+  @type state :: %{
+          player1: %{boats: list(), shots: list(), pid: pid()},
+          player2: %{boats: list(), shots: list(), pid: pid()},
+          mode: atom(),
+          available_boats: list()
+        }
+
+  @spec new :: %{
+          available_boats: [2 | 3 | 4 | 5, ...],
+          mode: :initial,
+          player1: %{boats: [], pid: nil, shots: []},
+          player2: %{boats: [], pid: nil, shots: []}
+        }
   def new do
     %{
       player1: %{
@@ -13,11 +29,11 @@ defmodule Battleship.Game do
         pid: nil
       },
       mode: :initial,
-      available_boats: [5,4,3,3,2]
+      available_boats: [5, 4, 3, 3, 2]
     }
   end
 
-  @spec join(pid(), map()) :: tuple()
+  @spec join(pid(), state()) :: {:ok, state()} | {:error, binary()}
   def join(pid, %{player1: %{pid: nil}} = state) do
     {:ok, put_in(state, [:player1, :pid], pid)}
   end
@@ -35,12 +51,21 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
-  def insert_boat({boat, pid}, %{player1: %{pid: pid1}, player2: %{pid: pid2}, mode: :setting} = state) do
+  @spec insert_boat({boat, pid()}, state) :: {atom(), state()} | {:error, binary()}
+  def insert_boat(
+        {boat, pid},
+        %{player1: %{pid: pid1}, player2: %{pid: pid2}, mode: :setting} = state
+      ) do
     {atom, other} = player(pid, pid1, pid2)
+
     if atom == :error do
       {atom, other}
     else
-      if Operationsgame.is_position_valid?(boat, get_in(state, [atom, :boats]), state.available_boats) do
+      if Operationsgame.is_position_valid?(
+           boat,
+           get_in(state, [atom, :boats]),
+           state.available_boats
+         ) do
         state =
           state
           |> put_in([atom, :boats], get_in(state, [atom, :boats]) ++ [boat])
