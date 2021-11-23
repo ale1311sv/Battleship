@@ -84,34 +84,46 @@ defmodule Battleship.Game do
 
   # PLAYING MODE
 	@spec make_shot(tuple(), map()) :: {atom(), term()}
-	def make_shot(shot, %{mode: :initial}) do
-  
-		# {:error, "You cannot shot in initial mode"}
-	end
 
-	def make_shot(shot, %{mode: :setting}) do
-		# {:error, "You cannot shot in setting mode"}
-	end
+  def make_shot({shot, pid}, %{mode: :p1} = state) when state.player2.pid == pid, do: {:error, "Is not your turn"}
+	def make_shot({shot, pid}, %{mode: :p1} = state) when state.player1.pid == pid do
+    {message, state} = insert_shot(shot, state)
+    cond do
+      message == :end -> {message, Map.put(state, :mode, :game_over)}
+      message == :water -> {message, Map.put(state, :mode, :p2)}
+      true -> {message, state}
+    end
+  end
 
-	def make_shot(shot, %{mode: :p1} = state) do
-		# if shot_valid?(shot, state.player1.shots) do
-		# 	state = put_in(state, [:player1, :shots], [shot] ++ state.player1.shots)
-		# 	conseq = conseq_shots(state.player1.shots, state.player2.boats)
-		# 	{conseq, state}
-		# else
-		# 	{:error, state}
-		# end
-	end
+  def make_shot({shot, pid}, %{mode: :p2} = state) when state.player1.pid == pid, do: {:error, "Is not your turn"}
+	def make_shot({shot, pid}, %{mode: :p2} = state) when state.player2.pid == pid do
+    {message, state} = insert_shot(shot, state)
+    cond do
+      message == :end -> {message, Map.put(state, :mode, :game_over)}
+      message == :water -> {message, Map.put(state, :mode, :p1)}
+      true -> {message, state}
+    end
+  end
 
-	def make_shot(shot, %{mode: :p2} = state) do
-		# if shot_valid?(shot, state.player2.shots) do
-		# 	state = put_in(state, [:player2, :shots], [shot] ++ state.player1.shots)
-		# 	conseq = conseq_shots(state.player1.shots, state.player1.boats)
-		# 	{conseq, state}
-		# else
-		# 	{:error, state}
-		# end
-	
+  def make_shot( _, %{mode: _}) do
+		{:error, "You cannot shot in this mode"}
 	end
+  @spec insert_shot()
+  def insert_shot(shot, state) do
+    turn = turn_of(state.mode)
+    if shot_valid?(shot, state[List.first(turn)].shots) do
+      state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
+      conseq = conseq_shots(state[List.first(turn)].shots, state.List.last(turn).shots)
+      {conseq, state}
+    else
+      {:error, "This shots is not allowed"}
+    end
+  end
 
+  def turn_of(mode) do
+    case {:mode, mode} do
+      {:mode, :p1} -> [:player1, :player2]
+      {:mode, :p2} -> [:player2, :player1]
+    end
+  end
 end
