@@ -105,19 +105,18 @@ defmodule Battleship.Game do
     end
   end
 
-  def make_shot( _, %{mode: _}) do
-		{:error, "You cannot shot in this mode"}
-	end
-  @spec insert_shot()
+  def make_shot( _, %{mode: _}), do: {:error, "You cannot shot in this mode"}
+
+
   def insert_shot(shot, state) do
-    turn = turn_of(state.mode)
-    if shot_valid?(shot, state[List.first(turn)].shots) do
-      state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
-      conseq = conseq_shots(state[List.first(turn)].shots, state.List.last(turn).shots)
-      {conseq, state}
-    else
-      {:error, "This shots is not allowed"}
-    end
+    # turn = turn_of(state.mode)
+    # if shot_valid?(shot, state[List.first(turn)].shots) do
+    #   state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
+    #   conseq = conseq_shots(state[List.first(turn)].shots, state.List.last(turn).shots)
+    #   {conseq, state}
+    # else
+    #   {:error, "This shots is not allowed"}
+    # end
   end
 
   def turn_of(mode) do
