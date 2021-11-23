@@ -9,12 +9,12 @@ defmodule Battleship.Opsetting do
   """
   @spec is_position_valid?(boat, list, list) :: boolean
   
-  def is_position_valid?(boat, [], _available_boats) do
-    is_boat_on_grid?(boat)
+  def is_position_valid?(boat, [], available_boats) do
+    is_boat_available?(boat) && is_boat_on_grid?(boat)
   end
 
-  def is_position_valid?(boat, [set_boat], _available_boats) do
-    if is_boat_on_grid?(boat) do 
+  def is_position_valid?(boat, [set_boat], available_boats) do
+    if is_boat_on_grid?(boat) && is_boat_available?(boat) do 
       Enum.filter(boat, &(!Enum.member?( illegal_cells( set_boat), &1) ) )
       |> length() == length(boat)
     else
