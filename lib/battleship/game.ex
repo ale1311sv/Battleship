@@ -1,5 +1,5 @@
 defmodule Battleship.Game do
-  alias Battleship.Opsetting
+  alias Battleship.Operationsgame
   def new do
     %{
       player1: %{
@@ -40,13 +40,13 @@ defmodule Battleship.Game do
     if atom == :error do
       {atom, other}
     else
-      if Opsetting.is_position_valid?(boat, get_in(state, [atom, :boats]), state.available_boats) do
+      if Operationsgame.is_position_valid?(boat, get_in(state, [atom, :boats]), state.available_boats) do
         state =
           state
           |> put_in([atom, :boats], get_in(state, [atom, :boats]) ++ [boat])
 
-        if Opsetting.all_boats_set?(get_in(state, [atom, :boats]), state.available_boats) do
-          if Opsetting.all_boats_set?(get_in(state, [other, :boats]), state.available_boats) do
+        if Operationsgame.all_boats_set?(get_in(state, [atom, :boats]), state.available_boats) do
+          if Operationsgame.all_boats_set?(get_in(state, [other, :boats]), state.available_boats) do
             state =
               state
               |> Map.put(:mode, :p1)
