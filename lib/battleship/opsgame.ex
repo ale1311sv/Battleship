@@ -70,7 +70,7 @@ defmodule Battleship.Operationsgame do
 
   def all_boats_set?(boats, available_boats), do: boats_left_player(boats, available_boats) == []
 
-  
+
 
   # SUPPORT FUNCTIONS
 
@@ -127,7 +127,7 @@ defmodule Battleship.Operationsgame do
   end
 
   @doc """
-  Function to consider the illegal cells to locate boats given a 
+  Function to consider the illegal cells to locate boats given a
   """
   @spec illegal_cells(boat) :: [cell]
 
@@ -146,7 +146,7 @@ defmodule Battleship.Operationsgame do
   @doc """
   Function that returns the available boats for player to locate by their length
   """
-  @spec boats_left_player([boat], list) :: boolean
+  @spec boats_left_player([boat], list) :: list
 
   def boats_left_player(list_boats, available_boats) do
     available_boats -- Enum.map(list_boats, &length(&1))

@@ -1,4 +1,5 @@
 defmodule Battleship.Game do
+  alias Battleship.Operationsgame
   def new do
     %{
       player1: %{
@@ -85,7 +86,7 @@ defmodule Battleship.Game do
   # PLAYING MODE
 	@spec make_shot(tuple(), map()) :: {atom(), term()}
 
-  def make_shot({shot, pid}, %{mode: :p1} = state) when state.player2.pid == pid, do: {:error, "Is not your turn"}
+  def make_shot({_shot, pid}, %{mode: :p1} = state) when state.player2.pid == pid, do: {:error, "Is not your turn"}
 	def make_shot({shot, pid}, %{mode: :p1} = state) when state.player1.pid == pid do
     {message, state} = insert_shot(shot, state)
     cond do
@@ -95,7 +96,7 @@ defmodule Battleship.Game do
     end
   end
 
-  def make_shot({shot, pid}, %{mode: :p2} = state) when state.player1.pid == pid, do: {:error, "Is not your turn"}
+  def make_shot({_shot, pid}, %{mode: :p2} = state) when state.player1.pid == pid, do: {:error, "Is not your turn"}
 	def make_shot({shot, pid}, %{mode: :p2} = state) when state.player2.pid == pid do
     {message, state} = insert_shot(shot, state)
     cond do
@@ -109,14 +110,14 @@ defmodule Battleship.Game do
 
 
   def insert_shot(shot, state) do
-    # turn = turn_of(state.mode)
-    # if shot_valid?(shot, state[List.first(turn)].shots) do
-    #   state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
-    #   conseq = conseq_shots(state[List.first(turn)].shots, state.List.last(turn).shots)
-    #   {conseq, state}
-    # else
-    #   {:error, "This shots is not allowed"}
-    # end
+    turn = turn_of(state.mode)
+    if Operationsgame.is_shot_valid?(shot, state[List.first(turn)].shots) do
+      state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
+      conseq = Operationsgame.conseq_shots(state[List.first(turn)].shots, state[List.last(turn)].shots)
+      {conseq, state}
+    else
+      {:error, "This shots is not allowed"}
+    end
   end
 
   def turn_of(mode) do
