@@ -56,22 +56,22 @@ defmodule Battleship.Game do
         {boat, pid},
         %{player1: %{pid: pid1}, player2: %{pid: pid2}, mode: :setting} = state
       ) do
-    {atom, other} = player(pid, pid1, pid2)
+    {active_player, other_player} = player(pid, pid1, pid2)
 
-    if atom == :error do
-      {atom, other}
+    if active_player == :noplayer do
+      {:error, "PID not valid"}
     else
       if Operationsgame.is_position_valid?(
            boat,
-           get_in(state, [atom, :boats]),
+           get_in(state, [active_player, :boats]),
            state.available_boats
          ) do
         state =
           state
-          |> put_in([atom, :boats], get_in(state, [atom, :boats]) ++ [boat])
+          |> put_in([active_player, :boats], get_in(state, [active_player, :boats]) ++ [boat])
 
-        if Operationsgame.all_boats_set?(get_in(state, [atom, :boats]), state.available_boats) do
-          if Operationsgame.all_boats_set?(get_in(state, [other, :boats]), state.available_boats) do
+        if Operationsgame.all_boats_set?(get_in(state, [active_player, :boats]), state.available_boats) do
+          if Operationsgame.all_boats_set?(get_in(state, [other_player, :boats]), state.available_boats) do
             state =
               state
               |> Map.put(:mode, :p1)
@@ -97,7 +97,7 @@ defmodule Battleship.Game do
     cond do
       pid == pid1 -> {:player1, :player2}
       pid == pid2 -> {:player2, :player1}
-      true -> {:error, "PID not valid"}
+      true -> {:noplayer, "PID not valid"}
     end
   end
 end
