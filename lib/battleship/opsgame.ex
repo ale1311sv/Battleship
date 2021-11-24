@@ -78,6 +78,7 @@ defmodule Battleship.Operationsgame do
   @spec all_boats_set?([boat], [integer]) :: boolean
 
 
+
   def all_boats_set?(boats, available_boats), do: boats_left(boats, available_boats) == []
 
   # SUPPORT FUNCTIONS
@@ -132,8 +133,11 @@ defmodule Battleship.Operationsgame do
     |> Enum.filter(&is_cell_valid?(&1))
   end
 
-  # Function that returns the available boats for player to locate by their length
-  @spec boats_left([boat], list) :: boolean
+  @doc """
+  Function that returns the available boats for player to locate by their length
+  """
+  @spec boats_left([boat], list) :: list
+
 
   defp boats_left(list_boats, available_boats) do
     available_boats -- Enum.map(list_boats, &length(&1))

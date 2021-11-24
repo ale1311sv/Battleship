@@ -16,6 +16,7 @@ defmodule Battleship.Game do
           player1: %{boats: [], pid: nil, shots: []},
           player2: %{boats: [], pid: nil, shots: []}
         }
+        
   def new do
     %{
       player1: %{
@@ -88,7 +89,7 @@ defmodule Battleship.Game do
       end
     end
   end
-
+  
   def insert_boat(_, _) do
     {:error, "Mode not valid"}
   end
@@ -98,6 +99,50 @@ defmodule Battleship.Game do
       pid == pid1 -> {:player1, :player2}
       pid == pid2 -> {:player2, :player1}
       true -> {:noplayer, "PID not valid"}
+    end
+  end
+
+  # PLAYING MODE
+	@spec make_shot(tuple(), map()) :: {atom(), term()}
+
+  def make_shot({_shot, pid}, %{mode: :p1} = state) when state.player2.pid == pid, do: {:error, "Is not your turn"}
+	def make_shot({shot, pid}, %{mode: :p1} = state) when state.player1.pid == pid do
+    {message, state} = insert_shot(shot, state)
+    cond do
+      message == :end -> {message, Map.put(state, :mode, :game_over)}
+      message == :miss -> {message, Map.put(state, :mode, :p2)}
+      true -> {message, state}
+    end
+  end
+
+  def make_shot({_shot, pid}, %{mode: :p2} = state) when state.player1.pid == pid, do: {:error, "Is not your turn"}
+	def make_shot({shot, pid}, %{mode: :p2} = state) when state.player2.pid == pid do
+    {message, state} = insert_shot(shot, state)
+    cond do
+      message == :end -> {message, Map.put(state, :mode, :game_over)}
+      message == :miss -> {message, Map.put(state, :mode, :p1)}
+      true -> {message, state}
+    end
+  end
+
+  def make_shot( _, %{mode: _}), do: {:error, "You cannot shot in this mode"}
+
+
+  def insert_shot(shot, state) do
+    turn = turn_of(state.mode)
+    if Operationsgame.is_shot_valid?(shot, state[List.first(turn)].shots) do
+      state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
+      conseq = Operationsgame.conseq_shots(state[List.first(turn)].shots, state[List.last(turn)].shots)
+      {conseq, state}
+    else
+      {:error, "This shots is not allowed"}
+    end
+  end
+
+  def turn_of(mode) do
+    case {:mode, mode} do
+      {:mode, :p1} -> [:player1, :player2]
+      {:mode, :p2} -> [:player2, :player1]
     end
   end
 end
