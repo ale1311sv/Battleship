@@ -5,23 +5,8 @@ defmodule BattleshipWeb.DrawHelpers do
   element CSS classes.
   """
 
-  @type cell :: {non_neg_integer(), non_neg_integer()}
-  @type boat :: [cell]
-  @type socket :: %{
-          you: %{
-            available_boats: [non_neg_integer()],
-            boats: [boat],
-            shots: [cell],
-            first_cell_selected: cell,
-            boat_selected: non_neg_integer()
-          },
-          enemy: %{
-            boats: [boat],
-            shots: [cell]
-          },
-          mode: atom(),
-          submode: atom()
-        }
+  alias Battleship.Game
+  alias Battleship.Operations
 
   @doc """
   Says if a cell ({'row', 'column'}) could be clicked by the user or not, depending on the
@@ -29,10 +14,15 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "enabled" or "disabled"
   """
-  @spec clickable(cell, [boat], list(non_neg_integer()), non_neg_integer()) :: atom()
-  def clickable({_row, _column}, _boats, _available_boats, _boat_selected) do
-    # boat_selected_length = available_boats |> Enum.at(boat_selected)
-    # Ops.is_second_cell?(boat_selected_length, {row, column}, assigns.you.boats)
+  @spec clickable(Game.cell, [Game.boat], non_neg_integer(), Game.cell) :: atom()
+  def clickable(cell, boats, boat_selected, selected_cell) do
+    if selected_cell != nil do
+      if Operations.is_second_cell?(boat_selected, selected_cell, boats, cell) do
+        :enabled
+      else
+        :disabled
+      end
+    end
   end
 
   @doc """
@@ -43,8 +33,9 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns '"BOAT_PART ALIGNMENT"'', being:
   - BOAT_PART: boat_head, boat_body or boat_tail
+  - ALIGNMENT: vertical or horizontal
   """
-  @spec content(cell, [boat], [cell]) :: String.t()
+  @spec content(Game.cell, [Game.boats], [Game.cell]) :: String.t()
   def content({row, column}, _boats, _shots) do
     # cell = Ops.what_is_cell(row, column, row)
     cell = what_is_cell(row, column)
@@ -79,7 +70,7 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Returns the number of boat in the list of cells given
-  @spec count_boat_in_cells(non_neg_integer(), list(cell)) :: non_neg_integer()
+  @spec count_boat_in_cells(non_neg_integer(), list(Game.cell)) :: non_neg_integer()
   defp count_boat_in_cells(acc, []), do: acc
 
   defp count_boat_in_cells(acc, [{row, column} | t]) do

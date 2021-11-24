@@ -82,6 +82,15 @@ defmodule Battleship.Operations do
   end
 
   @doc """
+  Function to check if cell is a possible second cell for boat selection given selected cell
+  """
+  @spec is_second_cell?(integer, Game.cell(), Game.cell(), [Game.boat()]) :: boolean
+
+  def is_second_cell?(length, selected_cell, cell, boats),
+    do: Enum.member?(second_cells(length, selected_cell, boats), cell)
+
+
+  @doc """
   Function to check if cell is inside grid
   """
   @spec is_cell_valid?({}) :: boolean
@@ -143,14 +152,6 @@ defmodule Battleship.Operations do
       :unharmed
     end
   end
-
-  @doc """
-  Function to check if cell is a possible second cell for boat selection given selected cell
-  """
-  @spec is_second_cell?(integer, Game.cell(), Game.cell(), [Game.boat()]) :: boolean
-
-  def is_second_cell?(length, selected_cell, cell, boats),
-    do: Enum.member?(second_cells(length, selected_cell, boats), cell)
 
   # SUPPORT FUNCTIONS
 
