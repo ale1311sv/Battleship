@@ -44,7 +44,7 @@ use Phoenix.LiveView
       not is_nil(first_cell) ->
         cond do
           (not is_cell_valid?(first_cell)) || (not is_cell_valid?(cell)) -> {:reply, "One of the cells is out of margin"}
-          (not is_it_a_boat?(first_cell, cell)) -> {:reply, "Cells selection is illegal"}
+          not is_it_a_boat?(first_cell, cell) -> {:reply, "Cells selection is illegal"}
           not was_boat_selection_right?(first_cell, cell, length_selection) -> {:reply, "Your boat selection was not right"}
           true -> second_cell_selected(cell, socket)
         end
