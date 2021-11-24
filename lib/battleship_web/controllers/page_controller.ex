@@ -2,6 +2,6 @@ defmodule BattleshipWeb.PageController do
   use BattleshipWeb, :controller
 
   def index(conn, _params) do
-    render(conn, "game_live.html")
+    render(conn, "player_game_live.html")
   end
 end

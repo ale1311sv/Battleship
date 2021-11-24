@@ -46,21 +46,30 @@ defmodule Battleship.Operationsgame do
   end
 
   def is_position_valid?(boat, [set_boat], available_boats) do
-    if is_boat_on_grid?(boat) && is_boat_available?(boat, [set_boat], available_boats) do
-      Enum.filter(boat, &(!Enum.member?(illegal_cells(set_boat), &1)))
-      |> length() == length(boat)
-    else
-      false
-    end
+    # if is_boat_on_grid?(boat) && is_boat_available?(boat, [set_boat], available_boats) do
+    boat -- illegal_cells([set_boat]) == boat && is_boat_on_grid?(boat) &&
+      is_boat_available?(boat, [set_boat], available_boats)
+
+    # Enum.filter(boat, &(!Enum.member?(illegal_cells([set_boat]), &1)))
+    # |> length() == length(boat)
+    # else
+    #  false
+    # end
   end
 
-  def is_position_valid?(boat, list_boats = [set_boat | tail], available_boats) do
-    if is_boat_available?(boat, list_boats, available_boats) do
-      is_position_valid?(boat, [set_boat], available_boats) &&
-        is_position_valid?(boat, tail, available_boats)
-    else
-      false
-    end
+  def is_position_valid?(boat, [set_boat | tail], available_boats) do
+    is_position_valid?(boat, [set_boat], available_boats) &&
+      is_position_valid?(boat, tail, available_boats)
+  end
+
+  @doc """
+  Function to check if boat position is valid ALTERNATIVE TO DISCUSS
+  """
+  @spec is_this_position_valid?(boat, [boat], [integer]) :: boolean
+
+  def is_this_position_valid?(boat, boats, available_boats) do
+    is_boat_on_grid?(boat) && is_boat_available?(boat, boats, available_boats) &&
+      Enum.all?(boat, fn cell -> not Enum.member?(illegal_cells(boats), cell) end)
   end
 
   @doc """
@@ -68,70 +77,51 @@ defmodule Battleship.Operationsgame do
   """
   @spec all_boats_set?([boat], [integer]) :: boolean
 
-  def all_boats_set?(boats, available_boats), do: boats_left_player(boats, available_boats) == []
 
 
+  def all_boats_set?(boats, available_boats), do: boats_left(boats, available_boats) == []
 
   # SUPPORT FUNCTIONS
 
-  @doc """
-  Function to check if one shot missed
-  """
+  # Function to check if one shot missed
   @spec did_it_miss?(cell, [boat]) :: boolean
 
-  def did_it_miss?(shot, boats), do: not Enum.member?(List.flatten(boats), shot)
+  defp did_it_miss?(shot, boats), do: not Enum.member?(List.flatten(boats), shot)
 
-  @doc """
-  Function to check if cell is inside grid
-  """
+  # Function to check if cell is inside grid
   @spec is_cell_valid?(cell) :: boolean
 
-  def is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
+  defp is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
 
-  @doc """
-  Function which returns the remaining cells of boats, the ones unharmed by shots
-  """
+  # Function which returns the remaining cells of boats, the ones unharmed by shots
   @spec effects_shots_on_boats([cell], [boat]) :: [[cell]]
 
-  def effects_shots_on_boats(shots, [boat]), do: [boat -- shots]
+  defp effects_shots_on_boats(shots, [boat]), do: [boat -- shots]
 
-  def effects_shots_on_boats(shots, [boat | boats]),
+  defp effects_shots_on_boats(shots, [boat | boats]),
     do: effects_shots_on_boats(shots, [boat]) ++ effects_shots_on_boats(shots, boats)
 
-  @doc """
-  Function to check if cell is inside grid
-  """
-  @spec is_cell_valid?(cell) :: boolean
-
-  def is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
-
-  @doc """
-  Function to check if cells of a boat are inside grid
-  """
+  # Function to check if cells of a boat are inside grid
   @spec is_boat_on_grid?(boat) :: boolean
 
-  def is_boat_on_grid?(boat) do
+  defp is_boat_on_grid?(boat) do
     Enum.all?(boat, &is_cell_valid?(&1))
   end
 
-  @doc """
-  Function which returns list of adjacent cells for a given cell
-  """
+  # Function which returns list of adjacent cells for a given cell
   @spec adjacent_cells(cell) :: [cell]
 
-  def adjacent_cells({x, y}) do
+  defp adjacent_cells({x, y}) do
     for i <- (x - 1)..(x + 1), j <- (y - 1)..(y + 1) do
       if i == x or j == y, do: {i, j}
     end
     |> Enum.filter(&(!is_nil(&1)))
   end
 
-  @doc """
-  Function to consider the illegal cells to locate boats given a
-  """
+  # Function to consider the illegal cells to locate boats given a boat
   @spec illegal_cells(boat) :: [cell]
 
-  def illegal_cells(set_boat) do
+  defp illegal_cells(set_boat) do
     illegal = []
 
     for {x, y} <- set_boat do
@@ -146,19 +136,18 @@ defmodule Battleship.Operationsgame do
   @doc """
   Function that returns the available boats for player to locate by their length
   """
-  @spec boats_left_player([boat], list) :: list
+  @spec boats_left([boat], list) :: list
 
-  def boats_left_player(list_boats, available_boats) do
+
+  defp boats_left(list_boats, available_boats) do
     available_boats -- Enum.map(list_boats, &length(&1))
   end
 
-  @doc """
-  Function to check if boat is available
-  """
+  # Function to check if boat is available
   @spec is_boat_available?(boat, [boat], list) :: boolean
 
-  def is_boat_available?(boat, list_boats, available_boats) do
-    boats_left_player(list_boats, available_boats)
+  defp is_boat_available?(boat, list_boats, available_boats) do
+    boats_left(list_boats, available_boats)
     |> Enum.sort()
     |> Enum.member?(length(boat))
   end
