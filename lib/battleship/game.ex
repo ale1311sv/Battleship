@@ -1,34 +1,26 @@
 defmodule Battleship.Game do
-  alias Battleship.Operationsgame
+  alias Battleship.Operations
 
-  @type cell :: tuple()
-  @type boat :: [[cell()]]
+  defmodule Player do
+    defstruct boats: [],
+              shots: [],
+              pid: nil
+  end
+
+  @type cell :: {non_neg_integer(), non_neg_integer()}
+  @type boat :: [cell()]
   @type state :: %{
-          player1: %{boats: list(), shots: list(), pid: pid()},
-          player2: %{boats: list(), shots: list(), pid: pid()},
+          player1: %Player{},
+          player2: %Player{},
           mode: atom(),
-          available_boats: list()
+          available_boats: [pos_integer()]
         }
 
-  @spec new :: %{
-          available_boats: [2 | 3 | 4 | 5, ...],
-          mode: :initial,
-          player1: %{boats: [], pid: nil, shots: []},
-          player2: %{boats: [], pid: nil, shots: []}
-        }
-        
+  @spec new :: state()
   def new do
     %{
-      player1: %{
-        boats: [],
-        shots: [],
-        pid: nil
-      },
-      player2: %{
-        boats: [],
-        shots: [],
-        pid: nil
-      },
+      player1: %Player{},
+      player2: %Player{},
       mode: :initial,
       available_boats: [5, 4, 3, 3, 2]
     }
@@ -52,97 +44,94 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
-  @spec insert_boat({boat, pid()}, state) :: {atom(), state()} | {:error, binary()}
-  def insert_boat(
-        {boat, pid},
-        %{player1: %{pid: pid1}, player2: %{pid: pid2}, mode: :setting} = state
-      ) do
-    {active_player, other_player} = player(pid, pid1, pid2)
+  def insert_boat({boat, pid}, %{mode: :setting} = state) do
+    player = player(pid, state)
 
-    if active_player == :noplayer do
-      {:error, "PID not valid"}
-    else
-      if Operationsgame.is_position_valid?(
-           boat,
-           get_in(state, [active_player, :boats]),
-           state.available_boats
-         ) do
+    cond do
+      player == :error -> {:error, "Player not valid"}
+
+      not Operations.is_boat_available?(boat, state[player].boats, state.available_boats) ->
+        {:error, "Boat not available"}
+
+      not Operations.is_boat_location_valid?(boat, state[player].boats) ->
+        {:error, "Location not valid"}
+
+      true ->
         state =
           state
-          |> put_in([active_player, :boats], get_in(state, [active_player, :boats]) ++ [boat])
+          |> put_in([player, :boats], state[player].boats ++ [boat])
+          |> check_start_playing()
 
-        if Operationsgame.all_boats_set?(get_in(state, [active_player, :boats]), state.available_boats) do
-          if Operationsgame.all_boats_set?(get_in(state, [other_player, :boats]), state.available_boats) do
-            state =
-              state
-              |> Map.put(:mode, :p1)
-
-            {:ready, state}
-          else
-            {:full, state}
-          end
-        else
-          {:ok, state}
-        end
-      else
-        {:error, "Position not valid"}
-      end
+        {:ok, state}
     end
   end
-  
+
   def insert_boat(_, _) do
     {:error, "Mode not valid"}
   end
 
-  defp player(pid, pid1, pid2) do
-    cond do
-      pid == pid1 -> {:player1, :player2}
-      pid == pid2 -> {:player2, :player1}
-      true -> {:noplayer, "PID not valid"}
-    end
-  end
-
   # PLAYING MODE
-	@spec make_shot(tuple(), map()) :: {atom(), term()}
-
-  def make_shot({_shot, pid}, %{mode: :p1} = state) when state.player2.pid == pid, do: {:error, "Is not your turn"}
-	def make_shot({shot, pid}, %{mode: :p1} = state) when state.player1.pid == pid do
-    {message, state} = insert_shot(shot, state)
+  def shoot({shot, pid}, %{mode: player} = state) when player in [:player1, :player2] do
     cond do
-      message == :end -> {message, Map.put(state, :mode, :game_over)}
-      message == :miss -> {message, Map.put(state, :mode, :p2)}
-      true -> {message, state}
+      player(pid, state) == :error -> {:error, "Player not valid"}
+      player(pid, state) != player -> {:error, "It is not your turn"}
+      not Operations.is_shot_valid?(shot, state[player].shots) -> {:error, "Not valid shot"}
+      true ->
+        state =
+          state
+          |> update_in([player, :shots], &(&1 ++ [shot]))
+          |> change_turn_after_shot()
+          |> check_end_game()
+
+        {:ok, state}
     end
+
   end
 
-  def make_shot({_shot, pid}, %{mode: :p2} = state) when state.player1.pid == pid, do: {:error, "Is not your turn"}
-	def make_shot({shot, pid}, %{mode: :p2} = state) when state.player2.pid == pid do
-    {message, state} = insert_shot(shot, state)
-    cond do
-      message == :end -> {message, Map.put(state, :mode, :game_over)}
-      message == :miss -> {message, Map.put(state, :mode, :p1)}
-      true -> {message, state}
-    end
+  def shoot(_, _), do: {:error, "You cannot shot in this mode"}
+
+  defp both_players_ready?(state) do
+    Operations.all_boats_set?(state.player1.boats, state.available_boats) &&
+      Operations.all_boats_set?(state.player2.boats, state.available_boats)
   end
 
-  def make_shot( _, %{mode: _}), do: {:error, "You cannot shot in this mode"}
-
-
-  def insert_shot(shot, state) do
-    turn = turn_of(state.mode)
-    if Operationsgame.is_shot_valid?(shot, state[List.first(turn)].shots) do
-      state = put_in(state, [List.first(turn), :shots], [shot] ++ state[List.first(turn)].shots)
-      conseq = Operationsgame.conseq_shots(state[List.first(turn)].shots, state[List.last(turn)].shots)
-      {conseq, state}
+  defp check_start_playing(state) do
+    if both_players_ready?(state) do
+      Map.put(state, :mode, :player1)
     else
-      {:error, "This shots is not allowed"}
+      state
     end
   end
 
-  def turn_of(mode) do
-    case {:mode, mode} do
-      {:mode, :p1} -> [:player1, :player2]
-      {:mode, :p2} -> [:player2, :player1]
+  defp check_end_game(state) do
+    player = state.mode
+    shots = state[player].shots
+    boats = state[other_player(player)].boats
+    if Operations.is_game_end?(shots, boats) do
+      Map.put(state, :mode, :game_over)
+    else
+      state
     end
   end
+
+  defp change_turn_after_shot(state) do
+    player = state.mode
+    shot = List.last(state[player].shots)
+    if Operations.hit?(shot, state[other_player(player)].boats) do
+      state
+    else
+      Map.put(state, :mode, other_player(player))
+    end
+  end
+
+  defp player(pid, state) do
+    cond do
+      pid == state.player1.pid -> :player1
+      pid == state.player2.pid -> :player2
+      true -> :error
+    end
+  end
+
+  defp other_player(:player1), do: :player2
+  defp other_player(:player2), do: :player1
 end
