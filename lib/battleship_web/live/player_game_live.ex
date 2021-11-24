@@ -1,10 +1,10 @@
 defmodule BattleshipWeb.PlayerGameLive do
-  use Phoenix.LiveView
+  use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
 
   def new() do
     %{
       you: %{
-        available_boats: [5, 4, 3, 3, 2],
+        boats_left: [5, 4, 3, 3, 2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -49,6 +49,7 @@ defmodule BattleshipWeb.PlayerGameLive do
           true -> second_cell_selected(cell, socket)
         end
     end
+
     {:noreply, socket}
   end
 

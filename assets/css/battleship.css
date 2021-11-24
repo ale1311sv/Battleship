@@ -27,25 +27,77 @@ html {
   display: flex;
   justify-content: center;
   flex-direction: column;
-  margin: 0 auto;
   padding: 0 2.0rem;
-  position: relative;
-  min-width: 80vw;
-  min-height: 99vh;
+  height: 99vh;
 }
 select {
   width: auto;
 }
 
 header {
+  min-width: 50vmin;
   text-align: center;
   color: black;
-  text-shadow: 5px 5px 0px white;
   border-radius: 6px;
   padding: 0.3em 0.3em 0.1em;
-  margin-bottom:3vmin;
-  font-size: 7vmin;
+  margin-bottom: 3vmin;
   font-family: 'KimiHimi';
+  display: inline-block;
+}
+
+header div.top {
+  text-shadow: 4px 4px 0px white;
+  font-size: 4vmin;
+}
+
+header div.bottom {
+  text-shadow: 5px 5px 0px white;
+  font-size: 8vmin;
+}
+
+/* CELLS */
+
+
+.cell {
+  background-size: 5vmin;
+}
+
+/*.cell.secret */
+
+.cell.water {
+  background-image: url("/images/board/water.png");
+}
+
+.cell.boat_tail {
+  background-image: url("/images/board/tail.png");
+}
+
+.cell.boat_body {
+  background-image: url("/images/board/body.png");
+}
+
+.cell.boat_head {
+  background-image: url("/images/board/head.png");
+}
+
+.cell.horizontal {
+  transform:rotate(270deg);
+}
+
+.cell.enabled:hover {
+  background-color: green;
+}
+
+.cell.enabled:active {
+  background-color: #ffffff99;
+}
+
+.cell.disabled:hover {
+  background-color: red;
+}
+
+.cell.selected {
+  background-color: blue;
 }
 
 /* GAME PANEL */
@@ -64,7 +116,7 @@ header {
 .game {
   flex: 1 0 auto;
   display: flex;
-  align-items: center2;
+  align-items: center;
   flex-direction: row;
   justify-content: space-around;
   margin: 3vmin;
@@ -110,6 +162,10 @@ header {
     width: 4vmin;
     transform:rotate(270deg);
   }
+
+  .game .fleet .boat span {
+    visibility: hidden;
+  }
   
   
 
@@ -133,23 +189,7 @@ header {
   height: min-content;
 }
 
-.setting .board:after {
-  content: "";
-  display: block;
-  padding-bottom: 100%;
-}
 
-.cell.enabled:hover {
-  background-color: green;
-}
-
-.cell.enabled:active {
-  background-color: #ffffff99;
-}
-
-.cell.disabled:hover {
-  background-color: red;
-}
 
 
   /* FLEETS STYLE */
@@ -170,21 +210,40 @@ header {
 .setting .fleet .boat {
   display: flex;
   flex-direction: column;
-  width: 4vmin;
+  max-width: 4vmin;
   margin: 0.5vmin;
 }
 
-.setting .boat:hover {
-  background-color: blue;
+.setting .boat:hover img {
+  background-color: blueviolet;
 }
 
-.setting .boat:active {
+.setting .boat:active img {
   background-color: #ffffff99;
+}
+
+.setting .boat.selected img {
+  background-color: blue;
 }
 
 .setting .fleet .boat img {
   height: 4vmin;
   width: 4vmin;
+}
+
+.setting .fleet .boat span {
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 1.5vmin;
+  border-radius: 50%;
+  width: 2vmin;
+  height: 2vmin;
+  position: relative;
+  top: 12px;
+  right: 8px;
+  z-index: 1;
 }
 
 /* INFO */
@@ -194,6 +253,7 @@ header {
   background-color: #2ecc71;
   background-clip: padding-box;
   border-radius: 6px;
+  margin-top: 5vmin;
   padding: 1vmin;
   border: 5vmin solid transparent;
   border-image: url("/images/background/sand_with_grass.png") 65 round;
@@ -201,6 +261,7 @@ header {
 
 .info span {
   color: white;
+  text-shadow: 2px 2px 0px black;
   font-family: 'KenneyMini';
   font-weight: bold;
   font-size: 4vmin;
