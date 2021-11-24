@@ -46,7 +46,7 @@ defmodule Battleship.Operations do
   """
   @spec conseq_shots([Game.cell()], [Game.boat()]) :: atom
 
-  def conseq_shots([shot], boats), do: if( not hit?(shot, boats), do: :miss, else: :hit)
+  def conseq_shots([shot], boats), do: if(not hit?(shot, boats), do: :miss, else: :hit)
 
   def conseq_shots([shot | shots], boats) do
     if not hit?(shot, boats) do
@@ -88,7 +88,6 @@ defmodule Battleship.Operations do
 
   def is_second_cell?(length, selected_cell, cell, boats),
     do: Enum.member?(second_cells(length, selected_cell, boats), cell)
-
 
   @doc """
   Function to check if cell is inside grid

@@ -1,7 +1,7 @@
 <%= for length <- Enum.uniq(@you.boats_left) do %>
   <div class={"boat #{if @you.boat_selected == length, do: "selected"}"} style={"max-height: #{4*length}vmin; max-width: #{4*length}vmin"} phx-click="boat_selected" phx-value-length={length}>
     
-    <span><b><%= Enum.frequencies(@you.boats_left)[length] %></b></span> <!-- Show the number of boats left of that length -->
+    <span><b><%= Enum.count(@you.boats_left, &(&1 == length))%></b></span> <!-- Show the number of boats left of that length -->
     
     <img src={Routes.static_path(@socket, "/images/board/tail.png")}>
 

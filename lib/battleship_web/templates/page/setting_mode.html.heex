@@ -8,7 +8,7 @@
     <%= for row <- 0..9 do %>
       <%= for column <- 0..9 do %>
         <div class={"cell #{clickable({row, column}, @you.boats, @you.boat_selected, @you.first_cell_selected)} 
-                          #{content({row, column}, @you.boats, @enemy.shots)} 
+                          #{image({row, column}, @you.boats)} 
                           #{if @you.first_cell_selected == {row, column}, do: "selected"}"}
           phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div>
@@ -24,7 +24,7 @@
 <div class="info">
   <%= cond do %>
     <% is_nil(@you.boat_selected) -> %> <span>CLICK A BOAT!</span> <!-- NO CLICKS/SECOND CELL CLICKED --> 
-    <% is_nil(@you.first_cell_selected) -> %> <span>CLICK A CELL!</span>  <!-- BOAT CLICKED -->
+    <% is_nil(@you.first_cell_selected) -> %> <span>NOW, CLICK A CELL!</span>  <!-- BOAT CLICKED -->
     <% true -> %> <span>SET YOUR BOAT CLICKING ANOTHER CELL!</span>  <!-- FIRST CELL CLICKED --> 
   <% end %>
 </div>

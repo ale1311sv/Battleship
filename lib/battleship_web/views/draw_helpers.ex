@@ -14,90 +14,60 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "enabled" or "disabled"
   """
-  @spec clickable(Game.cell, [Game.boat], non_neg_integer(), Game.cell) :: atom()
-  def clickable(cell, boats, boat_selected, selected_cell) do
-    if selected_cell != nil do
-      if Operations.is_second_cell?(boat_selected, selected_cell, boats, cell) do
-        :enabled
-      else
-        :disabled
-      end
+  @spec clickable(Game.cell, [Game.boat], non_neg_integer(), Game.cell) :: String.t()
+  def clickable(cell, boats, boat_selected, first_cell_selected) do
+    cond do
+      is_nil(boat_selected) -> ""
+      is_nil(first_cell_selected) -> "enabled"
+      true ->
+        if Operations.is_second_cell?(boat_selected, first_cell_selected, boats, cell),
+          do: "enabled", else: "disabled"
     end
   end
 
   @doc """
-  Says which physical kind of element of the game must be drawn inside that cell ({'row',
-  'column'}) ) depending on what's inside of it according with the general state of the
-  game (:water or :boat). About boats, it considers the alignment of the full boat which
-  that cell belongs to, as if it is the tail, body or head of the boat.
+  Specifies which actual image will be drawn in the given 'cell', knowing which 'boats' are
+  already located in the board.
 
-  Returns '"BOAT_PART ALIGNMENT"'', being:
-  - BOAT_PART: boat_head, boat_body or boat_tail
-  - ALIGNMENT: vertical or horizontal
+  Returns "CONTENT ALIGNMENT", for example "boat_body horizontal"
   """
-  @spec content(Game.cell, [Game.boats], [Game.cell]) :: String.t()
-  def content({row, column}, _boats, _shots) do
-    # cell = Ops.what_is_cell(row, column, row)
-    cell = what_is_cell(row, column)
+  @spec image(Game.cell, [Game.boats]) :: String.t()
+  def image(cell, boats), do: "#{content(cell, boats)} #{alignment(cell, boats)}"
 
-    if cell == :water do
-      "water"
-    else
-      if surrounding_boat_cells(row, column) == 2 do
-        "boat_body #{alignment(row, column)}"
-      else
-        if (what_is_cell(row - 1, column) == :water and what_is_cell(row + 1, column) == :boat) or
-             (what_is_cell(row, column - 1) == :water and what_is_cell(row, column + 1) == :boat) do
-          "boat_tail #{alignment(row, column)}"
-        else
-          "boat_head #{alignment(row, column)}"
-        end
-      end
+  # Calculate the drawable content of the cell. If it is a boat, which specific part of the boat
+  @spec content(Game.cell, [Game.boats]) :: String.t()
+  defp content({row, column}, boats) do
+    main_cell = Operations.what_is_cell({row, column}, boats)
+    left_cell = Operations.what_is_cell({row, column - 1}, boats)
+    right_cell = Operations.what_is_cell({row, column + 1}, boats)
+    top_cell = Operations.what_is_cell({row - 1, column}, boats)
+    bottom_cell = Operations.what_is_cell({row + 1, column}, boats)
+
+    cond do
+      main_cell == :water -> "water"
+
+      # Is it surrounded by 2 boat cells? It must be the BODY
+      Enum.count([left_cell, right_cell, top_cell, bottom_cell], &(&1 == :boat)) == 2 -> "boat_body"
+
+      # We fixed that the top part in a vertical boat and the left part
+      # in an horizontal boat will always be the TAIL
+      (top_cell == :water and bottom_cell == :boat) or
+          (left_cell == :water and right_cell == :boat) -> "boat_tail"
+
+      true -> "boat_head"
     end
   end
 
   # Check the alignment of the boat which the cell (row 'i', column 'j') belongs to.
-  # Returns ':vertical' or ':horizontal'
-  @spec alignment(non_neg_integer(), non_neg_integer()) :: atom()
-  defp alignment(i, j) do
-    if count_boat_in_cells(0, [{i - 1, j}, {i + 1, j}]) != 0, do: :vertical, else: :horizontal
+  @spec alignment(Game.cell, [Game.boat]) :: String.t()
+  defp alignment({row, column}, boats) do
+    top_cell = Operations.what_is_cell({row - 1, column}, boats)
+    bottom_cell = Operations.what_is_cell({row + 1, column}, boats)
+
+    if Enum.count([top_cell, bottom_cell], &(&1 == :boat)) != 0,
+      do: "vertical",
+      else: "horizontal"
+
   end
 
-  # Returns the number of surrounding boat cells of a specific cell (row 'i', column 'j')
-  @spec surrounding_boat_cells(non_neg_integer(), non_neg_integer()) :: non_neg_integer()
-  defp surrounding_boat_cells(i, j) do
-    count_boat_in_cells(0, [{i - 1, j}, {i + 1, j}, {i, j - 1}, {i, j + 1}])
-  end
-
-  # Returns the number of boat in the list of cells given
-  @spec count_boat_in_cells(non_neg_integer(), list(Game.cell)) :: non_neg_integer()
-  defp count_boat_in_cells(acc, []), do: acc
-
-  defp count_boat_in_cells(acc, [{row, column} | t]) do
-    if what_is_cell(row, column) == :boat do
-      count_boat_in_cells(acc + 1, t)
-    else
-      count_boat_in_cells(acc, t)
-    end
-  end
-
-  # Trial function that imitates the Ops API
-  @spec what_is_cell(non_neg_integer(), non_neg_integer()) :: atom()
-  defp what_is_cell(row, column) do
-    case {row, column} do
-      {9, 5} -> :boat
-      {9, 6} -> :boat
-      {2, 5} -> :boat
-      {3, 5} -> :boat
-      {4, 5} -> :boat
-      {5, 5} -> :boat
-      {1, 1} -> :boat
-      {1, 2} -> :boat
-      {1, 3} -> :boat
-      {3, 1} -> :boat
-      {4, 1} -> :boat
-      {5, 1} -> :boat
-      {_, _} -> :water
-    end
-  end
 end

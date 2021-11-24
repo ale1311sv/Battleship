@@ -6,7 +6,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       you: %{
         boats_left: [5, 4, 3, 3, 2],
-        boats: [],
+        boats: [[{1, 3}, {1, 4}, {1, 5}], [{2, 9}, {3, 9}]],
         shots: [],
         first_cell_selected: nil,
         boat_selected: nil
@@ -30,8 +30,11 @@ defmodule BattleshipWeb.PlayerGameLive do
 
   # - Events for setting state -------------------------
 
-
-  def handle_event("boat_selected", %{"length" => boat_length}, %{assigns: %{you: %{boat_selected: nil}}} = socket) do
+  def handle_event(
+        "boat_selected",
+        %{"length" => boat_length},
+        %{assigns: %{you: %{boat_selected: nil}}} = socket
+      ) do
     new_socket =
       update(socket, :you, &Map.put(&1, :boat_selected, String.to_integer(boat_length)))
 
@@ -43,12 +46,19 @@ defmodule BattleshipWeb.PlayerGameLive do
     {:noreply, socket}
   end
 
-  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{you: %{boat_selected: nil}}} = socket) do
+  def handle_event(
+        "cell_selected",
+        %{"row" => row, "column" => column},
+        %{assigns: %{you: %{boat_selected: nil}}} = socket
+      ) do
     {:noreply, socket}
   end
 
-
-  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{you: %{first_cell_selected: nil}}} = socket) do
+  def handle_event(
+        "cell_selected",
+        %{"row" => row, "column" => column},
+        %{assigns: %{you: %{first_cell_selected: nil}}} = socket
+      ) do
     cell = {String.to_integer(row), String.to_integer(column)}
     {:noreply, update(socket, :you, &Map.put(&1, :first_cell_selected, cell))}
   end
@@ -57,19 +67,22 @@ defmodule BattleshipWeb.PlayerGameLive do
     cell = {String.to_integer(row), String.to_integer(column)}
     first_cell = socket.assigns.you.first_cell_selected
     length_selection = socket.assigns.you.boat_selected
-      cond do
-        not Operations.is_cell_valid?(first_cell) || not Operations.is_cell_valid?(cell) ->
-          {:reply, "One of the cells is out of margin"}
 
-        not Operations.is_it_a_boat?(first_cell, cell) ->
-          {:reply, "Cells selection is illegal"}
+    cond do
+      not Operations.is_cell_valid?(first_cell) || not Operations.is_cell_valid?(cell) ->
+        {:reply, "One of the cells is out of margin"}
 
-        not Operations.are_selected_cells_intented_length?(first_cell, cell, length_selection) ->
-          {:reply, "Your boat selection was not right"}
+      not Operations.is_it_a_boat?(first_cell, cell) ->
+        {:reply, "Cells selection is illegal"}
 
-        true ->
-          # second_cell_selected(cell, socket)
-      end
+      not Operations.are_selected_cells_intented_length?(first_cell, cell, length_selection) ->
+        {:reply, "Your boat selection was not right"}
+
+      true ->
+        nil
+        # second_cell_selected(cell, socket)
+    end
+
     {:noreply, socket}
   end
 
@@ -78,7 +91,6 @@ defmodule BattleshipWeb.PlayerGameLive do
   Function when is selected the first cell
   """
   defp first_cell_selected(cell, socket) do
-
   end
 
   @doc """

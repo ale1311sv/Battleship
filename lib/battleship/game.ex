@@ -48,7 +48,8 @@ defmodule Battleship.Game do
     player = player(pid, state)
 
     cond do
-      player == :error -> {:error, "Player not valid"}
+      player == :error ->
+        {:error, "Player not valid"}
 
       not Operations.is_boat_available?(boat, state[player].boats, state.available_boats) ->
         {:error, "Boat not available"}
@@ -73,9 +74,15 @@ defmodule Battleship.Game do
   # PLAYING MODE
   def shoot({shot, pid}, %{mode: player} = state) when player in [:player1, :player2] do
     cond do
-      player(pid, state) == :error -> {:error, "Player not valid"}
-      player(pid, state) != player -> {:error, "It is not your turn"}
-      not Operations.is_shot_valid?(shot, state[player].shots) -> {:error, "Not valid shot"}
+      player(pid, state) == :error ->
+        {:error, "Player not valid"}
+
+      player(pid, state) != player ->
+        {:error, "It is not your turn"}
+
+      not Operations.is_shot_valid?(shot, state[player].shots) ->
+        {:error, "Not valid shot"}
+
       true ->
         state =
           state
@@ -85,7 +92,6 @@ defmodule Battleship.Game do
 
         {:ok, state}
     end
-
   end
 
   def shoot(_, _), do: {:error, "You cannot shot in this mode"}
@@ -107,6 +113,7 @@ defmodule Battleship.Game do
     player = state.mode
     shots = state[player].shots
     boats = state[other_player(player)].boats
+
     if Operations.is_game_end?(shots, boats) do
       Map.put(state, :mode, :game_over)
     else
@@ -117,6 +124,7 @@ defmodule Battleship.Game do
   defp change_turn_after_shot(state) do
     player = state.mode
     shot = List.last(state[player].shots)
+
     if Operations.hit?(shot, state[other_player(player)].boats) do
       state
     else
