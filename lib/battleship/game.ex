@@ -1,4 +1,21 @@
 defmodule Battleship.Game do
+  alias Battleship.Operationsgame
+
+  @type cell :: tuple()
+  @type boat :: [[cell()]]
+  @type state :: %{
+          player1: %{boats: list(), shots: list(), pid: pid()},
+          player2: %{boats: list(), shots: list(), pid: pid()},
+          mode: atom(),
+          available_boats: list()
+        }
+
+  @spec new :: %{
+          available_boats: [2 | 3 | 4 | 5, ...],
+          mode: :initial,
+          player1: %{boats: [], pid: nil, shots: []},
+          player2: %{boats: [], pid: nil, shots: []}
+        }
   def new do
     %{
       player1: %{
@@ -11,10 +28,12 @@ defmodule Battleship.Game do
         shots: [],
         pid: nil
       },
-      mode: :initial
+      mode: :initial,
+      available_boats: [5, 4, 3, 3, 2]
     }
   end
 
+  @spec join(pid(), state()) :: {:ok, state()} | {:error, binary()}
   def join(pid, %{player1: %{pid: nil}} = state) do
     {:ok, put_in(state, [:player1, :pid], pid)}
   end
@@ -32,86 +51,53 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
-  def insert_boat(boat, %{player1: %{boats: boats_list}} = state, pid)
-      when state.player1.pid == pid do
-    # if is_position_valid?(boat, boats_list) do
-    #   state =
-    #     state
-    #     |> put_in([:player1, :boats], state.player1.boats ++ boat)
+  @spec insert_boat({boat, pid()}, state) :: {atom(), state()} | {:error, binary()}
+  def insert_boat(
+        {boat, pid},
+        %{player1: %{pid: pid1}, player2: %{pid: pid2}, mode: :setting} = state
+      ) do
+    {active_player, other_player} = player(pid, pid1, pid2)
 
-    #   if all_boats_in_player?(get_in(state, [:player1, :boats])) do
-    #     if all_boats_in?(get_in(state, [:player1, :boats]), get_in(state, [:player2, :boats])) do
-    #       state =
-    #         state
-    #         |> Map.put(:mode, :p1)
+    if active_player == :noplayer do
+      {:error, "PID not valid"}
+    else
+      if Operationsgame.is_position_valid?(
+           boat,
+           get_in(state, [active_player, :boats]),
+           state.available_boats
+         ) do
+        state =
+          state
+          |> put_in([active_player, :boats], get_in(state, [active_player, :boats]) ++ [boat])
 
-    #       {:ready, state}
-    #     else
-    #       {:full, state}
-    #     end
-    #   else
-    #     {:ok, state}
-    #   end
-    # else
-    #   {:error, "Position no valid"}
-    # end
+        if Operationsgame.all_boats_set?(get_in(state, [active_player, :boats]), state.available_boats) do
+          if Operationsgame.all_boats_set?(get_in(state, [other_player, :boats]), state.available_boats) do
+            state =
+              state
+              |> Map.put(:mode, :p1)
+
+            {:ready, state}
+          else
+            {:full, state}
+          end
+        else
+          {:ok, state}
+        end
+      else
+        {:error, "Position not valid"}
+      end
+    end
   end
 
-  def insert_boat(boat, %{player2: %{boats: boats_list}} = state, pid)
-      when state.player2.pid == pid do
-    # if is_position_valid?(boat, boats_list) do
-    #   state =
-    #     state
-    #     |> put_in([:player1, :boats], state.player2.boats ++ boat)
-
-    #   if all_boats_in_player?(get_in(state, [:player2, :boats])) do
-    #     if all_boats_in?(get_in(state, [:player1, :boats]), get_in(state, [:player2, :boats])) do
-    #       state =
-    #         state
-    #         |> Map.put(:mode, :p1)
-
-    #       {:ready, state}
-    #     else
-    #       {:full, state}
-    #     end
-    #   else
-    #     {:ok, state}
-    #   end
-    # else
-    #   {:error, "Position no valid"}
-    # end
+  def insert_boat(_, _) do
+    {:error, "Mode not valid"}
   end
 
-  # PLAYING MODE
-	@spec make_shot(tuple(), map()) :: {atom(), term()}
-	def make_shot(shot, %{mode: :initial}) do
-  
-		# {:error, "You cannot shot in initial mode"}
-	end
-
-	def make_shot(shot, %{mode: :setting}) do
-		# {:error, "You cannot shot in setting mode"}
-	end
-
-	def make_shot(shot, %{mode: :p1} = state) do
-		# if shot_valid?(shot, state.player1.shots) do
-		# 	state = put_in(state, [:player1, :shots], [shot] ++ state.player1.shots)
-		# 	conseq = conseq_shots(state.player1.shots, state.player2.boats)
-		# 	{conseq, state}
-		# else
-		# 	{:error, state}
-		# end
-	end
-
-	def make_shot(shot, %{mode: :p2} = state) do
-		# if shot_valid?(shot, state.player2.shots) do
-		# 	state = put_in(state, [:player2, :shots], [shot] ++ state.player1.shots)
-		# 	conseq = conseq_shots(state.player1.shots, state.player1.boats)
-		# 	{conseq, state}
-		# else
-		# 	{:error, state}
-		# end
-	
-	end
-
+  defp player(pid, pid1, pid2) do
+    cond do
+      pid == pid1 -> {:player1, :player2}
+      pid == pid2 -> {:player2, :player1}
+      true -> {:noplayer, "PID not valid"}
+    end
+  end
 end

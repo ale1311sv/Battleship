@@ -1,5 +1,5 @@
 defmodule BattleshipWeb.PlayerGameLive do
-use Phoenix.LiveView
+  use Phoenix.LiveView
 
   @spec new :: %{
           enemy: %{boats: [], shots: []},

@@ -70,8 +70,6 @@ defmodule Battleship.Operationsgame do
 
   def all_boats_set?(boats, available_boats), do: boats_left_player(boats, available_boats) == []
 
-  
-
   # SUPPORT FUNCTIONS
 
   @doc """
