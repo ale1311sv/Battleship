@@ -21,7 +21,7 @@
 <div class="info">
   <%= cond do %>
     <% is_nil(@you.boat_selected) -> %> <span>CLICK A BOAT!</span> <!-- NO CLICKS/SECOND CELL CLICKED --> 
-    <% @you.first_cell_selected == {} -> %> <span>CLICK A CELL!</span>  <!-- BOAT CLICKED -->
+    <% @you.first_cell_selected == nil -> %> <span>CLICK A CELL!</span>  <!-- BOAT CLICKED -->
     <% @you.first_cell_selected != {} -> %> <span>SET YOUR BOAT CLICKING ANOTHER CELL!</span>  <!-- FIRST CELL CLICKED --> 
   <% end %>
 </div>
