@@ -77,6 +77,7 @@ defmodule Battleship.Operationsgame do
   """
   @spec all_boats_set?([boat], [integer]) :: boolean
 
+
   def all_boats_set?(boats, available_boats), do: boats_left(boats, available_boats) == []
 
   # SUPPORT FUNCTIONS

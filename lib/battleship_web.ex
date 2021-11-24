@@ -87,6 +87,8 @@ defmodule BattleshipWeb do
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
+      import BattleshipWeb.DrawHelpers
+
       import BattleshipWeb.ErrorHelpers
       import BattleshipWeb.Gettext
       alias BattleshipWeb.Router.Helpers, as: Routes
