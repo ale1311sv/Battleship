@@ -61,7 +61,7 @@ header div.bottom {
   background-size: 4vmin;
 }
 
-.setting.cell {
+.setting .cell {
   background-size: 5vmin;
 }
 
@@ -167,10 +167,11 @@ header div.bottom {
     border-image: url("/images/background/fleet.png") 65 round;
   }
   
-  .game .boat {
+  .game .fleet .boat {
     display: flex;
-    margin: 0.5vmin;
-    height: 4vmin;
+    flex-direction: row;
+    
+    max-height: 4vmin;
   }
 
   .game .boat img {
@@ -180,7 +181,26 @@ header div.bottom {
   }
 
   .game .fleet .boat span {
-    visibility: hidden;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-size: 1.5vmin;
+    border-radius: 50%;
+    width: 2vmin;
+    height: 2vmin;
+    position: relative;
+    bottom: 8px;
+    left: 8px;
+    z-index: 1;
+  }
+
+  .game .fleet .header {
+    flex: 0 0 100%;
+    color: white;
+    font-family: 'KenneyMini';
+    position: relative;
+    bottom: 10px;
   }
   
   

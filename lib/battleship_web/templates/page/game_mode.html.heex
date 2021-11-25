@@ -10,13 +10,14 @@
         <%= for column <- 0..9 do %>
           <div class={"cell #{image({row, column}, @you.boats)}"}
           phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
-        </div>
+          </div>
         <% end %>
       <% end %>
     </div>
 
     <div class="fleet">
-        <%=  render("fleet.html", assigns) %>
+      <div class="header"> BOATS ALIVE LEFT: </div>
+      <%=  render("fleet.html", assigns) %>
     </div>
 
   </div>
@@ -30,14 +31,17 @@
     <div class = "board">
       <%= for row <- 0..9 do %>
         <%= for column <- 0..9 do %>
-          <div class="cell enabled" id={"#{row}#{column}"}>
-            <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-          </div>
+          <div class={"cell #{clickable({row, column}, @you.boats, @you.boat_selected, @you.first_cell_selected)} 
+                            #{image({row, column}, @enemy.boats, @you.shots)} 
+                            #{if @you.first_cell_selected == {row, column}, do: "selected"}"}
+          phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
+        </div> 
         <% end %>
       <% end %>
     </div>
     
     <div class="fleet">
+      <div class="header"> BOATS ALIVE LEFT: </div>
       <%= render("fleet.html", assigns) %>
     </div>
 
