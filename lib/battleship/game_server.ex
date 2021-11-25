@@ -19,14 +19,14 @@ defmodule Battleship.GameServer do
     GenServer.call(game_name, {:shoot, shot})
   end
 
-
   # SERVER FUNCTIONS
   def init(_) do
-    {:ok, Game.new}
+    {:ok, Game.new()}
   end
 
   def handle_call(:join, from, state) do
     {pid, _} = from
+
     case Game.join(pid, state) do
       {:ok, new_state} -> {:reply, {:ok, "Succesfull conection"}, new_state}
       {:error, message} -> {:reply, {:error, message}, state}
@@ -36,29 +36,40 @@ defmodule Battleship.GameServer do
   def handle_call({:insert_boat, boat}, from, state) do
     {pid, _} = from
     player = Game.player(pid, state)
-    {atom, new_state} = Game.insert_boat({boat, pid}, state)
-    check_mode_players_ready(new_state)
-    case atom do
-      :error -> {:reply, {:error, new_state}, state}
-      :ok -> {:reply, {:ok, new_state[player].boats}, new_state}
+
+    case Game.insert_boat({boat, pid}, state) do
+      {:error, msg} ->
+        {:reply, {:error, msg}, state}
+
+      {:ok, new_state} ->
+        check_mode_players_ready(new_state)
+        {:reply, {:ok, new_state[player].boats}, new_state}
     end
   end
 
   def handle_call({:shoot, shot}, from, state) do
     {pid, _} = from
     player = Game.player(pid, state)
-    {atom, new_state} = Game.shoot({shot, pid}, state)
-    check_mode_after_shot(new_state)
-    case atom do
-      :error -> {:reply, {:error, new_state}, state}
-      :ok ->
-        Process.send(new_state[Game.other_player(player)].pid, {:enemy_shots, new_state[player].shots}, :ok)
-        {:reply, {:ok, new_state[player].shots}, new_state}
 
+    case Game.shoot({shot, pid}, state) do
+      {:error, msg} ->
+        {:reply, {:error, msg}, state}
+
+      {:ok, new_state} ->
+        {active_turn, other_turn} = check_mode_after_shot(new_state, player)
+
+        Process.send(
+          new_state[Game.other_player(player)].pid,
+          {other_turn, new_state[player].shots},
+          :ok
+        )
+
+        {:reply, {active_turn, new_state[player].shots}, new_state}
     end
   end
 
-  defp check_mode_players_ready(msg) when is_binary(msg), do: nil
+  # PRIVATE FUNCTIONS
+
   defp check_mode_players_ready(state) do
     if state.mode == :player1 do
       Process.send(state.player1.pid, {:you, state.player2.boats}, :ok)
@@ -68,14 +79,11 @@ defmodule Battleship.GameServer do
     end
   end
 
-  defp check_mode_after_shot(msg) when is_binary(msg), do: nil
-  defp check_mode_after_shot(state) do
-    if state.mode == :player1 do
-      Process.send(state.player1.pid, :you, :ok)
-      Process.send(state.player2.pid, :enemy, :ok)
-    else
-      Process.send(state.player2.pid, :you, :ok)
-      Process.send(state.player1.pid, :enemy, :ok)
+  defp check_mode_after_shot(state, player) do
+    cond do
+      state.mode == player -> {:you, :enemy}
+      state.mode == Game.other_player(player) -> {:enemy, :you}
+      true -> {:you_won, :you_lost}
     end
   end
 end

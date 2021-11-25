@@ -88,6 +88,7 @@ defmodule BattleshipWeb do
       import Phoenix.View
 
       import BattleshipWeb.DrawHelpers
+      alias Battleship.Operations
 
       import BattleshipWeb.ErrorHelpers
       import BattleshipWeb.Gettext
