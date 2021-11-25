@@ -38,7 +38,7 @@ defmodule Battleship.Operations do
   @spec hit?(Game.cell(), [Game.boat()]) :: boolean
   def hit?(shot, boats), do: Enum.member?(List.flatten(boats), shot)
 
-  @spec is_game_end?([Game.cell], [Game.boat]) :: boolean
+  @spec is_game_end?([Game.cell()], [Game.boat()]) :: boolean
   def is_game_end?(shots, boats) do
     boats_flatten = List.flatten(boats)
     MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
@@ -48,7 +48,8 @@ defmodule Battleship.Operations do
   Function to analyse the impact of a received shot in someone's boats
   """
   @spec conseq_shots([Game.cell()], [Game.boat()]) :: atom
-  def conseq_shots([shot], boats), do: if( not hit?(shot, boats), do: :miss, else: :hit)
+  def conseq_shots([shot], boats), do: if(not hit?(shot, boats), do: :miss, else: :hit)
+
   def conseq_shots([shot | shots], boats) do
     if not hit?(shot, boats) do
       :miss
@@ -92,7 +93,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to check if cell is inside grid
   """
-  @spec are_cells_valid?(Game.cell, Game.cell) :: boolean
+  @spec are_cells_valid?(Game.cell(), Game.cell()) :: boolean
   def are_cells_valid?(cell1, celln), do: is_cell_valid?(cell1) && is_cell_valid?(celln)
 
   @doc """
@@ -105,14 +106,15 @@ defmodule Battleship.Operations do
   @doc """
   Function to check if selected cells to set a boat are right according to requested length
   """
-  @spec are_selected_cells_intented_length?(Game.cell(), Game.cell(), non_neg_integer()) :: boolean
+  @spec are_selected_cells_intented_length?(Game.cell(), Game.cell(), non_neg_integer()) ::
+          boolean
   def are_selected_cells_intented_length?(cell1, celln, length_boat_selected),
     do: distance_btw_cells(cell1, celln) + 1 == length_boat_selected
 
   @doc """
   Function to create a boat from cells WORKS ONLY FOR well defined wannabe boats
   """
-  @spec create_boat(Game.cell, Game.cell) :: Game.boat
+  @spec create_boat(Game.cell(), Game.cell()) :: Game.boat()
   def create_boat(cell1, celln) do
     case cells_alignment(cell1, celln) do
       :horizontal -> create_boat_horizontal(cell1, celln)
@@ -146,10 +148,10 @@ defmodule Battleship.Operations do
     end
   end
 
-
-  @spec is_first_cell?(pos_integer, Game.cell, [Game.boat]) :: boolean
+  @spec is_first_cell?(pos_integer, Game.cell(), [Game.boat()]) :: boolean
   def is_first_cell?(length_boat_selected, cell, boats) do
-    not Enum.member?(illegal_cells(boats), cell) && will_any_future_boat_fit?(length_boat_selected, cell, boats)
+    not Enum.member?(illegal_cells(boats), cell) &&
+      will_any_future_boat_fit?(length_boat_selected, cell, boats)
   end
 
   @doc """
@@ -191,15 +193,23 @@ defmodule Battleship.Operations do
     |> Enum.sort()
   end
 
-  @spec will_any_future_boat_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean
+  @spec will_any_future_boat_fit?(pos_integer, Game.cell(), [Game.boat()]) :: boolean
   defp will_any_future_boat_fit?(length, cell, boats) do
-    will_any_future_boat_vertical_fit?(length, cell, boats) || will_any_future_boat_horizontal_fit?(length, cell, boats)
+    will_any_future_boat_vertical_fit?(length, cell, boats) ||
+      will_any_future_boat_horizontal_fit?(length, cell, boats)
   end
 
-  @spec will_any_future_boat_vertical_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean
-  defp will_any_future_boat_vertical_fit?(length, cell = {x,y}, boats), do: is_second_cell?(length, cell, {x + length - 1, y}, boats) || is_second_cell?(length, cell, {x - length + 1, y}, boats)
-  @spec will_any_future_boat_horizontal_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean
-  defp will_any_future_boat_horizontal_fit?(length, cell = {x,y}, boats), do: is_second_cell?(length, cell, {x, y + length - 1}, boats) || is_second_cell?(length, cell, {x, y - length + 1}, boats)
+  @spec will_any_future_boat_vertical_fit?(pos_integer, Game.cell(), [Game.boat()]) :: boolean
+  defp will_any_future_boat_vertical_fit?(length, cell = {x, y}, boats),
+    do:
+      is_second_cell?(length, cell, {x + length - 1, y}, boats) ||
+        is_second_cell?(length, cell, {x - length + 1, y}, boats)
+
+  @spec will_any_future_boat_horizontal_fit?(pos_integer, Game.cell(), [Game.boat()]) :: boolean
+  defp will_any_future_boat_horizontal_fit?(length, cell = {x, y}, boats),
+    do:
+      is_second_cell?(length, cell, {x, y + length - 1}, boats) ||
+        is_second_cell?(length, cell, {x, y - length + 1}, boats)
 
   # Function to check if cells of a boat are inside grid
   @spec is_boat_on_grid?(Game.boat()) :: boolean
@@ -214,13 +224,13 @@ defmodule Battleship.Operations do
   end
 
   # Function to set the length of the future boat
-  @spec distance_btw_cells(Game.cell, Game.cell):: non_neg_integer
+  @spec distance_btw_cells(Game.cell(), Game.cell()) :: non_neg_integer
   defp distance_btw_cells(cell1, celln) do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end
 
   # Function to check if LEGAL cells are vertical or horizontal aligned
-  @spec cells_alignment(Game.cell, Game.cell):: atom
+  @spec cells_alignment(Game.cell(), Game.cell()) :: atom
   defp cells_alignment(cell1, celln) do
     cond do
       elem(cell1, 0) == elem(celln, 0) -> :horizontal
@@ -229,7 +239,7 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats horizontal boats invoked by create_boat
-  @spec create_boat_horizontal(Game.cell, Game.cell) :: Game.boat
+  @spec create_boat_horizontal(Game.cell(), Game.cell()) :: Game.boat()
   defp create_boat_horizontal(cell1, celln) do
     x = elem(cell1, 0)
     n = distance_btw_cells(cell1, celln)
@@ -243,7 +253,7 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats vertical boats invoked by create_boat
-  @spec create_boat_vertical(Game.cell, Game.cell ):: Game.boat
+  @spec create_boat_vertical(Game.cell(), Game.cell()) :: Game.boat()
   def create_boat_vertical(cell1, celln) do
     y = elem(cell1, 1)
     n = distance_btw_cells(cell1, celln)
@@ -255,7 +265,6 @@ defmodule Battleship.Operations do
 
     for i <- x..(x + n), do: {i, y}
   end
-
 
   # Function which returns the remaining cells of boats, the ones unharmed by shots
   @spec effects_shots_on_boats([Game.cell()], [Game.boat()]) :: [[Game.cell()]]
