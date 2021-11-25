@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       game_name: game_name,
       you: %{
-        boats_left: [2],
+        boats_left: [2, 2, 2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -104,6 +104,16 @@ defmodule BattleshipWeb.PlayerGameLive do
 
             {:noreply, assign(socket, :you, you)}
 
+          {:full, boats} ->
+            you =
+              socket.assigns.you
+              |> Map.put(:first_cell_selected, nil)
+              |> Map.put(:boat_selected, nil)
+              |> Map.put(:boats, boats)
+              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
+            {:noreply, assign(socket, :you, you)}
+
           {:error, msg} ->
             {:noreply, msg}
         end
@@ -133,7 +143,6 @@ defmodule BattleshipWeb.PlayerGameLive do
           socket =
             socket
             |> assign(:you, you)
-
             |> assign(:submode, turn)
 
           {:noreply, socket}
@@ -164,7 +173,7 @@ defmodule BattleshipWeb.PlayerGameLive do
   def handle_info({turn, enemy_shots}, %{assigns: %{mode: :game}} = socket) do
     enemy =
       socket.assigns.enemy
-      |> Map.put(:boats, enemy_shots)
+      |> Map.put(:shots, enemy_shots)
 
     socket =
       socket
