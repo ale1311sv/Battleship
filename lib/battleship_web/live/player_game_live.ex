@@ -15,7 +15,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         boats: [],
         shots: []
       },
-      mode: :setting,
+      mode: :game,
       submode: :basic
     }
   end
@@ -35,57 +35,82 @@ defmodule BattleshipWeb.PlayerGameLive do
     new_socket =
       update(socket, :you, &Map.put(&1, :boat_selected, String.to_integer(boat_length)))
 
-    IO.inspect({:noreply, new_socket})
-    # List.delete(socket.assigns.available_boats, String.to_integer(length)))}
+    {:noreply, new_socket}
   end
 
-  def handle_event("boat_selected", %{"length" => boat_length}, socket) do
+  def handle_event("boat_selected", _params, socket) do
     {:noreply, socket}
   end
 
-  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{you: %{boat_selected: nil}}} = socket) do
+  def handle_event("cell_selected", _params, %{assigns: %{you: %{boat_selected: nil}, mode: :setting}} = socket) do
     {:noreply, socket}
   end
 
 
-  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{you: %{first_cell_selected: nil}}} = socket) do
+  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{you: %{first_cell_selected: nil}, mode: :setting}} = socket) do
     cell = {String.to_integer(row), String.to_integer(column)}
     {:noreply, update(socket, :you, &Map.put(&1, :first_cell_selected, cell))}
   end
 
-  def handle_event("cell_selected", %{"row" => row, "column" => column}, socket) do
+  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{mode: :setting}} = socket) do
     cell = {String.to_integer(row), String.to_integer(column)}
     first_cell = socket.assigns.you.first_cell_selected
     length_selection = socket.assigns.you.boat_selected
       cond do
-        not Operations.is_cell_valid?(first_cell) || not Operations.is_cell_valid?(cell) ->
-          {:reply, "One of the cells is out of margin"}
+        not Operations.are_cells_valid?(first_cell, cell)->
+          {:noreply, "One of the cells is out of margin"}
 
         not Operations.is_it_a_boat?(first_cell, cell) ->
-          {:reply, "Cells selection is illegal"}
+          {:noreply, "Cells selection is illegal"}
 
         not Operations.are_selected_cells_intented_length?(first_cell, cell, length_selection) ->
-          {:reply, "Your boat selection was not right"}
+          {:noreply, "Your boat selection was not right"}
 
         true ->
-          # second_cell_selected(cell, socket)
-      end
-    {:noreply, socket}
+          boat = Operations.create_boat(first_cell, cell)
+
+          # SEND 'boat' TO GAME
+          # IF IT IS :ok DO
+
+          socket = update_socket_with_boat(boat, socket)
+
+          {:noreply, socket}
+        end
   end
+
+
+  def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{mode: :game}} = socket) do
+    cell = {String.to_integer(row), String.to_integer(column)}
+    shots = socket.assigns.you.shots
+
+    if Operations.is_shot_valid?(cell, shots) do
+        update_socket_with_shot(cell, socket)
+        IO.inspect({:noreply, socket})
+    else
+        {:noreply, "The shot is not valid"}
+    end
+  end
+
 
   # - Events for game state --------------------------
-  @doc """
-  Function when is selected the first cell
-  """
-  defp first_cell_selected(cell, socket) do
 
+  defp update_socket_with_boat(boat, socket) do
+    length_selection = socket.assigns.you.boat_selected
+
+    you = socket.assigns.you
+          |> Map.put(:first_cell_selected, nil)
+          |> Map.put(:boat_selected, nil)
+          |> update_in([:boats], &(&1 ++ [boat]))
+          |> update_in([:boats_left], &List.delete(&1, length_selection))
+
+    assign(socket, :you, you)
   end
 
-  @doc """
-  Function when is selected the second cell
-  """
-  # defp second_cell_selected(cell, socket) do
-  #   second_cell = cell
-  #   is_it_a_boat?(socket.assigns.you.first_cell_selected, second_cell)
-  # end
+  defp update_socket_with_shot(shot, socket) do
+    you = socket.assigns.you
+      |> update_in([:shots], &(&1 ++ [shot]))
+
+    assign(socket, :you, you)
+  end
+
 end
