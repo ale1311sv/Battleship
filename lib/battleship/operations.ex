@@ -99,7 +99,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to check if selected cells to set a boat are right according to requested length
   """
-  @spec are_selected_cells_intented_length?(Game.cell(), Game.cell(), integer) :: boolean
+  @spec are_selected_cells_intented_length?(Game.cell(), Game.cell(), non_neg_integer()) :: boolean
 
   def are_selected_cells_intented_length?(cell1, celln, length_boat_selected),
     do: distance_btw_cells(cell1, celln) + 1 == length_boat_selected
