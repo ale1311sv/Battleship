@@ -38,7 +38,7 @@ defmodule Battleship.Operations do
   @spec hit?(Game.cell(), [Game.boat()]) :: boolean
   def hit?(shot, boats), do: Enum.member?(List.flatten(boats), shot)
 
-  @spec is_game_end?([Game.cell, [Game.boat]]) :: boolean
+  @spec is_game_end?([Game.cell], [Game.boat]) :: boolean
   def is_game_end?(shots, boats) do
     boats_flatten = List.flatten(boats)
     MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
@@ -84,7 +84,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to check if cell is inside grid
   """
-  @are_cells_valid?(Game.cell, Game.cell) :: boolean
+  @spec are_cells_valid?(Game.cell, Game.cell) :: boolean
   def are_cells_valid?(cell1, celln), do: is_cell_valid?(cell1) && is_cell_valid?(celln)
 
   @doc """
@@ -138,9 +138,10 @@ defmodule Battleship.Operations do
     end
   end
 
-  @spec is_first_cell?(Game.cell, [Game.boat]) :: boolean
-  def is_first_cell?(cell, boats), do: Enum.member?(illegal_cells(boats), cell)
-
+  @spec is_first_cell?(pos_integer, Game.cell, [Game.boat]) :: boolean
+  def is_first_cell?(length_boat_selected, cell, boats) do 
+    not Enum.member?(illegal_cells(boats), cell) && will_any_future_boat_fit?(length_boat_selected, cell, boats)
+  end
   @doc """
   Function to check if cell is a possible second cell for boat selection given selected cell
   """
@@ -179,6 +180,16 @@ defmodule Battleship.Operations do
     |> Enum.uniq()
     |> Enum.sort()
   end
+  
+  @spec will_any_future_boat_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean
+  defp will_any_future_boat_fit?(length, cell, boats) do
+    will_any_future_boat_vertical_fit?(length, cell, boats) || will_any_future_boat_horizontal_fit?(length, cell, boats)
+  end
+  
+  @spec will_any_future_boat_vertical_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean
+  defp will_any_future_boat_vertical_fit?(length, cell = {x,y}, boats), do: is_second_cell?(length, cell, {x + length - 1, y}, boats) || is_second_cell?(length, cell, {x - length + 1, y}, boats) 
+  @spec will_any_future_boat_horizontal_fit?(pos_integer, Game.cell, [Game.boat]) :: boolean  
+  defp will_any_future_boat_horizontal_fit?(length, cell = {x,y}, boats), do: is_second_cell?(length, cell, {x, y + length - 1}, boats) || is_second_cell?(length, cell, {x, y - length + 1}, boats)
 
   # Function to check if cells of a boat are inside grid
   @spec is_boat_on_grid?(Game.boat()) :: boolean
