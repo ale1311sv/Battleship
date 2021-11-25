@@ -57,8 +57,11 @@ header div.bottom {
 
 /* CELLS */
 
+.game .cell {
+  background-size: 4vmin;
+}
 
-.cell {
+.setting.cell {
   background-size: 5vmin;
 }
 
@@ -66,6 +69,11 @@ header div.bottom {
 
 .cell.water {
   background-image: url("/images/board/water.png");
+}
+
+
+.cell.boat_tail.hit {
+  background-image: url("/images/board/hit.gif"), url("/images/board/tail.png");
 }
 
 .cell.boat_tail {
@@ -82,6 +90,14 @@ header div.bottom {
 
 .cell.horizontal {
   transform:rotate(270deg);
+}
+
+.cell.visibly.enabled {
+  background-color: green;
+}
+
+.cell.visibly.enabled:hover {
+  background-color: rgb(0, 82, 0);
 }
 
 .cell.enabled:hover {
@@ -253,10 +269,13 @@ header div.bottom {
   background-color: #2ecc71;
   background-clip: padding-box;
   border-radius: 6px;
-  margin-top: 5vmin;
   padding: 1vmin;
   border: 5vmin solid transparent;
   border-image: url("/images/background/sand_with_grass.png") 65 round;
+}
+
+.setting + .info {
+  margin-top: 5vmin;
 }
 
 .info span {
