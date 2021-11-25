@@ -52,10 +52,9 @@ defmodule Battleship.GameServer do
       {:error, msg} -> {:reply, {:error, msg}, state}
 
       {:ok, new_state} ->
-        check_mode_after_shot(new_state, player)
-        Process.send(new_state[Game.other_player(player)].pid, {:shots, new_state[player].shots}, :ok)
-        {:reply, {:ok, new_state[player].shots}, new_state}
-
+        {active_turn, other_turn} = check_mode_after_shot(new_state, player)
+        Process.send(new_state[Game.other_player(player)].pid, {other_turn, new_state[player].shots}, :ok)
+        {:reply, {active_turn, new_state[player].shots}, new_state}
     end
   end
 
@@ -71,18 +70,10 @@ defmodule Battleship.GameServer do
   end
 
   defp check_mode_after_shot(state, player) do
-    case state.mode do
-      :player1 ->
-        Process.send(state.player1.pid, :you, :ok)
-        Process.send(state.player2.pid, :enemy, :ok)
-
-      :player2 ->
-        Process.send(state.player1.pid, :enemy, :ok)
-        Process.send(state.player2.pid, :you, :ok)
-
-      :game_over ->
-        Process.send(state[player].pid, :you_won, :ok)
-        Process.send(state[Game.other_player(player)].pid, :you_lost, :ok)
+    cond do
+      state.mode == player -> {:you, :enemy}
+      state.mode == Game.other_player(player) -> {:enemy, :you}
+      true -> {:you_won, :you_lost}
     end
   end
 end
