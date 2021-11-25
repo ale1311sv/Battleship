@@ -149,7 +149,7 @@ defmodule Battleship.Operations do
 
   # Function to check if cell is inside grid
   @spec is_cell_valid?(Game.cell()) :: boolean
-  defp is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
+  def is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
 
   @spec is_cell_legal?(Game.cell(), [Game.boat()]) :: boolean
   defp is_cell_legal?(cell, boats) do
@@ -190,7 +190,7 @@ defmodule Battleship.Operations do
   end
 
   # Function to set the length of the future boat
-  @spec distance_btw_cells(Game.cell, Game.cell):: integer
+  @spec distance_btw_cells(Game.cell, Game.cell):: non_neg_integer
   defp distance_btw_cells(cell1, celln) do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end
@@ -219,9 +219,8 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats vertical boats invoked by create_boat
-  @spec create_boat_vertical(Game.cell, Game.cell ) :: boat
-
-  defp create_boat_vertical(cell1, celln) do
+  @spec create_boat_vertical(Game.cell, Game.cell ):: Game.boat
+  def create_boat_vertical(cell1, celln) do
     y = elem(cell1, 1)
     n = distance_btw_cells(cell1, celln)
 
