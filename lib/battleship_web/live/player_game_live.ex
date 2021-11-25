@@ -87,9 +87,6 @@ defmodule BattleshipWeb.PlayerGameLive do
       not Operations.is_it_a_boat?(first_cell, cell) ->
         {:noreply, "Cells selection is illegal"}
 
-      not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
-        {:noreply, "Cells selection doesn't match expected length for boat"}
-
       true ->
         boat = Operations.create_boat(first_cell, cell)
 
@@ -118,7 +115,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     cell = {String.to_integer(row), String.to_integer(column)}
     shots = socket.assigns.you.shots
 
-    if Operations.is_shot_legal?(cell, shots) do
+    if Operations.is_shot_valid?(cell, shots) do
       update_socket_with_shot(cell, socket)
       {:noreply, socket}
     else
