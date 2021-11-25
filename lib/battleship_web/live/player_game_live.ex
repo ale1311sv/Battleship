@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       game_name: game_name,
       you: %{
-        boats_left: [2],
+        boats_left: [2, 2, 2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -104,6 +104,16 @@ defmodule BattleshipWeb.PlayerGameLive do
 
             {:noreply, assign(socket, :you, you)}
 
+          {:full, boats} ->
+            you =
+              socket.assigns.you
+              |> Map.put(:first_cell_selected, nil)
+              |> Map.put(:boat_selected, nil)
+              |> Map.put(:boats, boats)
+              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
+            {:noreply, assign(socket, :you, you)}
+
           {:error, msg} ->
             {:noreply, msg}
         end
@@ -120,9 +130,12 @@ defmodule BattleshipWeb.PlayerGameLive do
 
     if Operations.is_shot_legal?(cell, shots) do
       case GameServer.shoot(socket.assigns.game_name, cell) do
-        {:error, msg} -> {:noreply, msg}
-        {active_turn, shots} ->
-          IO.inspect(shots)
+
+        {:error, _msg} ->
+          {:noreply, socket}
+
+        {turn, shots} ->
+
           you =
             socket.assigns.you
             |> Map.put(:shots, shots)
@@ -130,13 +143,12 @@ defmodule BattleshipWeb.PlayerGameLive do
           socket =
             socket
             |> assign(:you, you)
-            |> assign(:submode, active_turn)
-            IO.inspect(socket)
+            |> assign(:submode, turn)
 
           {:noreply, socket}
       end
     else
-      {:noreply, "The shot is not valid"}
+      {:noreply, "This shot is not valid"}
     end
   end
 
@@ -144,7 +156,7 @@ defmodule BattleshipWeb.PlayerGameLive do
 
   # - Handle infos ---------------------
 
-  def handle_info({turn, enemy_boats}, socket) do
+  def handle_info({turn, enemy_boats}, %{assigns: %{mode: :setting}} = socket) do
     enemy =
       socket.assigns.enemy
       |> Map.put(:boats, enemy_boats)
@@ -158,10 +170,15 @@ defmodule BattleshipWeb.PlayerGameLive do
     {:noreply, socket}
   end
 
-  def handle_info(msg, socket) do
+  def handle_info({turn, enemy_shots}, %{assigns: %{mode: :game}} = socket) do
+    enemy =
+      socket.assigns.enemy
+      |> Map.put(:shots, enemy_shots)
+
     socket =
       socket
-      |> assign(:submode, msg)
+      |> assign(:submode, turn)
+      |> assign(:enemy, enemy)
 
     {:noreply, socket}
   end
