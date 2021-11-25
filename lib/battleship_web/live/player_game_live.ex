@@ -118,7 +118,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     cell = {String.to_integer(row), String.to_integer(column)}
     shots = socket.assigns.you.shots
 
-    if Operations.is_shot_valid?(cell, shots) do
+    if Operations.is_shot_legal?(cell, shots) do
       update_socket_with_shot(cell, socket)
       {:noreply, socket}
     else
