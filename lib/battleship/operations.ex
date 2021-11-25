@@ -52,7 +52,7 @@ defmodule Battleship.Operations do
   @spec hit?(Game.cell(), [Game.boat()]) :: boolean
   def hit?(shot, boats), do: Enum.member?(List.flatten(boats), shot)
 
-  @spec is_game_end?([Game.cell], [Game.boat]) :: boolean
+  @spec is_game_end?([Game.cell()], [Game.boat()]) :: boolean
   def is_game_end?(shots, boats) do
     boats_flatten = List.flatten(boats)
     MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
@@ -66,7 +66,7 @@ defmodule Battleship.Operations do
     |> Enum.filter(&will_future_boat_fit?(cell, &1, boats))
   end
 
-  @spec are_cells_valid?(Game.cell, Game.cell) :: boolean
+  @spec are_cells_valid?(Game.cell(), Game.cell()) :: boolean
   def are_cells_valid?(cell1, celln), do: is_cell_valid?(cell1) && is_cell_valid?(celln)
 
   @spec is_it_a_boat?(Game.cell(), Game.cell()) :: boolean
@@ -80,7 +80,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to create a boat from cells WORKS ONLY FOR well defined wannabe boats
   """
-  @spec create_boat(Game.cell, Game.cell) :: Game.boat
+  @spec create_boat(Game.cell(), Game.cell()) :: Game.boat()
   def create_boat(cell1, celln) do
     case cells_alignment(cell1, celln) do
       :horizontal -> create_boat_horizontal(cell1, celln)
@@ -115,7 +115,6 @@ defmodule Battleship.Operations do
       :unharmed
     end
   end
-
 
   @doc """
   Function to check if I should select one cell to locate a boat whose length is length_boat_selected
@@ -215,7 +214,7 @@ defmodule Battleship.Operations do
   end
 
   # Function to check if LEGAL cells are vertical or horizontal aligned
-  @spec cells_alignment(Game.cell, Game.cell):: atom
+  @spec cells_alignment(Game.cell(), Game.cell()) :: atom
   defp cells_alignment(cell1, celln) do
     cond do
       elem(cell1, 0) == elem(celln, 0) -> :horizontal
@@ -236,7 +235,7 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats vertical boats invoked by create_boat
-  @spec create_boat_vertical(Game.cell, Game.cell ):: Game.boat
+  @spec create_boat_vertical(Game.cell(), Game.cell()) :: Game.boat()
   def create_boat_vertical(cell1, celln) do
     y = elem(cell1, 1)
     n = distance_btw_cells(cell1, celln)
