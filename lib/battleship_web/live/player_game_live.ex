@@ -17,7 +17,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         boats: [],
         shots: []
       },
-      mode: nil,
+      mode: :setting,
       submode: :basic
     }
   end
@@ -31,8 +31,8 @@ defmodule BattleshipWeb.PlayerGameLive do
     socket = assign(socket, new(game_name))
     GameServer.start_link(socket.assigns.game_name)
     case GameServer.join(socket.assigns.game_name) do
-      {_, {:ok, msg}} -> {:ok, assign(socket, :mode, :setting)}
-      {_, {:error, msg}} -> {:ok, assign(socket, :mode, :not_allowed)}
+      {:ok, _} -> {:ok, socket}
+      {:error, _} -> {:ok, assign(socket, :mode, :not_allowed)}
     end
   end
 
@@ -77,37 +77,44 @@ defmodule BattleshipWeb.PlayerGameLive do
         true ->
           boat = Operations.create_boat(first_cell, cell)
           case GameServer.insert_boat(socket.assigns.game_name, boat) do
-            {_, {:ok, boats}} -> {:noreply, assign(socket, [:you, :boats], boats)}
-            {_, {:error, msg}} -> {:noreply, msg}
+            {:ok, boats} -> {:noreply, assign(socket, [:you, :boats], boats)}
+            {:error, msg} -> {:noreply, msg}
           end
       end
   end
 
 
   def handle_event("cell_selected", %{"row" => row, "column" => column}, %{assigns: %{mode: :game}} = socket) do
-    cell = {String.to_integer(row), String.to_integer(column)}
-    shots = socket.assigns.you.shots
-
-    if Operations.is_shot_valid?(cell, shots) do
-        update_socket_with_shot(cell, socket)
-       {:noreply, socket}
-    else
-        {:noreply, "The shot is not valid"}
+    shot = {String.to_integer(row), String.to_integer(column)}
+    case GameServer.shoot(socket.assigns.game_name, shot) do
+      {:ok, shots} -> {:noreply, assign(socket, [:you, :shots], shots)}
+      {:error, msg} -> {:noreply, msg}
     end
   end
 
   # - Handle infos ---------------------
 
-  def handle_info({msg, enemy_boats}, socket) do
-    socket
-    |> assign(:mode, :game)
-    |> assign(:submode, msg)
-    |> assign([:enemy, :boats], enemy_boats)
+  def handle_info({turn, enemy_boats}, %{assigns: %{mode: :setting}} =socket) do
+      socket
+      |> assign(:mode, :game)
+      |> assign(:submode, turn)
+      |> assign([:enemy, :boats], enemy_boats)
+
+    {:noreply, socket}
   end
 
-  def handle_info(msg, socket) do
-    socket
-    |> assign(:submode, msg)
+  def handle_info({turn, enemy_shots}, %{assigns: %{mode: :game}} =socket) do
+    if turn == :you do
+      socket
+      |> assign(:submode, turn)
+      |> assign([:enemy, :shots], enemy_shots)
+
+      {:noreply, socket}
+    else
+      socket
+      |> assign(:submode, turn)
+      |> assign([:you, :shots], enemy_shots)
+    end
   end
 
   # - Events for game state --------------------------
@@ -124,11 +131,11 @@ defmodule BattleshipWeb.PlayerGameLive do
   #   assign(socket, :you, you)
   # end
 
-  defp update_socket_with_shot(shot, socket) do
-    you = socket.assigns.you
-      |> update_in([:shots], &(&1 ++ [shot]))
+  # defp update_socket_with_shot(shot, socket) do
+  #   you = socket.assigns.you
+  #     |> update_in([:shots], &(&1 ++ [shot]))
 
-    assign(socket, :you, you)
-  end
+  #   assign(socket, :you, you)
+  # end
 
 end
