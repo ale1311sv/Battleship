@@ -33,12 +33,12 @@ defmodule Battleship.Operations do
   def is_shot_valid?(shot, []), do: is_cell_valid?(shot)
   def is_shot_valid?(shot, [cell]), do: is_cell_valid?(shot) && shot != cell
   def is_shot_valid?(shot, [h | t]), do: is_shot_valid?(shot, [h]) && is_shot_valid?(shot, t)
-  
+
   # Function to check if one shot missed
   @spec hit?(Game.cell(), [Game.boat()]) :: boolean
   def hit?(shot, boats), do: Enum.member?(List.flatten(boats), shot)
 
-  @spec is_game_end?([Game.cell, [Game.boat]]) :: boolean
+  @spec is_game_end?([Game.cell], [Game.boat]) :: boolean
   def is_game_end?(shots, boats) do
     boats_flatten = List.flatten(boats)
     MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
@@ -84,7 +84,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to check if cell is inside grid
   """
-  @are_cells_valid?(Game.cell, Game.cell) :: boolean
+  @spec are_cells_valid?(Game.cell, Game.cell) :: boolean
   def are_cells_valid?(cell1, celln), do: is_cell_valid?(cell1) && is_cell_valid?(celln)
 
   @doc """

@@ -15,7 +15,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         boats: [],
         shots: []
       },
-      mode: :game,
+      mode: :setting,
       submode: :basic
     }
   end
