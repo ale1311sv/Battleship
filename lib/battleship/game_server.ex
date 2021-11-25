@@ -61,7 +61,7 @@ defmodule Battleship.GameServer do
         Process.send(
           new_state[Game.other_player(player)].pid,
           {other_turn, new_state[player].shots},
-          :ok
+          []
         )
 
         {:reply, {active_turn, new_state[player].shots}, new_state}
@@ -72,8 +72,8 @@ defmodule Battleship.GameServer do
 
   defp check_mode_players_ready(state) do
     if state.mode == :player1 do
-      Process.send(state.player1.pid, {:you, state.player2.boats}, :ok)
-      Process.send(state.player2.pid, {:enemy, state.player1.boats}, :ok)
+      Process.send(state.player1.pid, {:you, state.player2.boats}, [])
+      Process.send(state.player2.pid, {:enemy, state.player1.boats}, [])
     else
       nil
     end
