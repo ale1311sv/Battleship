@@ -21,7 +21,9 @@ defmodule BattleshipWeb.DrawHelpers do
         ""
 
       is_nil(first_cell_selected) ->
-        "enabled"
+        if Operations.is_first_cell?(cell, boats),
+          do: "visibly enabled",
+          else: "disabled"
 
       true ->
         if Operations.is_second_cell?(boat_selected, first_cell_selected, cell, boats),
