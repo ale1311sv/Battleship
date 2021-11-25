@@ -43,6 +43,7 @@ defmodule Battleship.GameServer do
 
       {:ok, new_state} ->
         check_mode_players_ready(new_state)
+
         check_player_finish(new_state, player)
     end
   end

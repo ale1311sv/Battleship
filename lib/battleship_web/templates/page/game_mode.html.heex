@@ -1,48 +1,75 @@
 <div class = "game panel">
-    <div class = "you">
-        <div class="player_title">
-            <span>YOU</span>
-        </div>
-        <div class = "board">
-            <%= for row <- 0..9 do %>
-                <%= for column <- 0..9 do %>
-                    <div class="cell disabled" id={"#{row}#{column}"}>
-                        <%= if row==1 and column==3 do %>
-                        <img src={Routes.static_path(@socket, "/images/board/tail.png")}">
-                        <% else %>
-                            <%= if row==2 and column==3 do %>
-                            <img src={Routes.static_path(@socket, "/images/board/head.png")}">
-                            <% else %>
-                            <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-                            <% end %>
-                        <% end %>
-                    </div>
+  <div class = "you">
 
-                <% end %>
-            <% end %>
-        </div>
-        <div class="fleet">
-            <%=  render("fleet.html", assigns) %>
-        </div>
+    <div class="player_title">
+      <span>YOU</span>
     </div>
-    <div class = "enemy">
-        <div class="player_title">
-            <span>ENEMY</span>
-        </div>
-        <div class = "board">
-            <%= for row <- 0..9 do %>
-                <%= for column <- 0..9 do %>
-                    <div class="cell enabled" id={"#{row}#{column}"}>
-                         <img src={Routes.static_path(@socket, "/images/board/water.png")}">
-                    </div>
-                <% end %>
-            <% end %>
-        </div>
-        <div class="fleet">
-            <%=  render("fleet.html", assigns) %>
-        </div>
+
+    <div class = "board">
+      <%= for row <- 0..9 do %>
+        <%= for column <- 0..9 do %>
+          <div class={"cell #{image({row, column}, @you.boats, @enemy.shots, :you)}"}
+          phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
+          </div>
+        <% end %>
+      <% end %>
     </div>
+
+    <div class="fleet">
+      <div class="header"> BOATS ALIVE LEFT: </div>
+      <%=  render("fleet.html", assigns) %>
+    </div>
+
+  </div>
+
+  <div class = "enemy">
+    
+    <div class="player_title">
+      <span>ENEMY</span>
+    </div>
+    
+    <div class = "board">
+      <%= for row <- 0..9 do %>
+        <%= for column <- 0..9 do %>
+          <div class={"cell #{shootable({row, column}, @you.shots)} 
+                            #{image({row, column}, @enemy.boats, @you.shots, :enemy)}"}"
+          phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
+        </div> 
+        <% end %>
+      <% end %>
+    </div>
+    
+    <div class="fleet">
+      <div class="header"> BOATS ALIVE LEFT: </div>
+      <%= render("fleet.html", assigns) %>
+    </div>
+
+  </div>
 </div>
+
 <div class="info">
-    <span>CLICK A BOAT!</span>
+    <%= cond do %>
+    <% @submode == :you -> %> 
+      <%= cond do %>
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :miss -> %> 
+        <!-- THE FIRST SHOT IN YOUR TURN --><span>IT'S YOUR TURN! CLICK A CELL TO SHOOT</span> 
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :hit -> %> 
+        <!-- THE NEXT SHOTS IN YOUR TURN: HIT --><span>IT WAS A HIT! SHOOT AGAIN</span> 
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :sunk -> %> 
+        <!-- THE NEXT SHOTS IN YOUR TURN: SUNK --><span>GREAT! YOU SANK A BOAT. SHOOT AGAIN</span> 
+      <% end %>
+    <% @submode == :enemy -> %> <span>OH, A MISS! IT'S ENEMY'S TURN</span>
+    <% true ->  %>
+  <% end %>
 </div>
+
+<%= if @submode == :you_won do %>
+  <div class="game_over">
+    <span>ALL THE ENEMY'S BOATS  ARE SUNK. <br><br> YOU'RE THE WINNER!</span>
+  </div>
+<% end %>
+<%= if @submode == :you_won do %>
+  <div class="game_over">
+    <span>OOH! ALL YOUR BOATS ARE SUNK. <br><br> YOU LOST!</span>
+  </div>
+<% end %>

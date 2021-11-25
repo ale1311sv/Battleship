@@ -59,8 +59,8 @@ defmodule Battleship.Game do
       not Operations.is_boat_available?(boat, state[player].boats, state.available_boats) ->
         {:error, "Boat not available"}
 
-      not Operations.is_boat_location_valid?(boat, state[player].boats) ->
-        {:error, "Location not valid"}
+      not Operations.is_boat_location_legal?(boat, state[player].boats) ->
+        {:error, "Location not legal"}
 
       true ->
         state =
@@ -86,7 +86,7 @@ defmodule Battleship.Game do
       player(pid, state) != player ->
         {:error, "It is not your turn"}
 
-      not Operations.is_shot_valid?(shot, state[player].shots) ->
+      not Operations.is_shot_legal?(shot, state[player].shots) ->
         {:error, "Not valid shot"}
 
       true ->
