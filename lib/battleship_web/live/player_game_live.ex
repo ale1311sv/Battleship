@@ -1,9 +1,11 @@
 defmodule BattleshipWeb.PlayerGameLive do
   use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
   alias Battleship.Operations
+  alias Battleship.GameServer
 
-  def new() do
+  def new(game_name) do
     %{
+      game_name: game_name,
       you: %{
         boats_left: [5, 4, 3, 3, 2],
         boats: [],
@@ -15,7 +17,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         boats: [],
         shots: []
       },
-      mode: :game,
+      mode: nil,
       submode: :basic
     }
   end
@@ -24,8 +26,15 @@ defmodule BattleshipWeb.PlayerGameLive do
     BattleshipWeb.PageView.render("player_game_live.html", assigns)
   end
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, new())}
+  def mount(params, _session, socket) do
+    game_name = Map.get(params, "id") |> String.to_atom()
+    socket = assign(socket, new(game_name))
+    GameServer.start_link(socket.assigns.game_name)
+
+    case GameServer.join(socket.assigns.game_name) do
+      {_, {:ok, msg}} -> {:ok, assign(socket, :mode, :setting)}
+      {_, {:error, msg}} -> {:ok, assign(socket, :mode, :not_allowed)}
+    end
   end
 
   # - Events for setting state -------------------------
@@ -78,19 +87,16 @@ defmodule BattleshipWeb.PlayerGameLive do
       not Operations.is_it_a_boat?(first_cell, cell) ->
         {:noreply, "Cells selection is illegal"}
 
-      not Operations.are_selected_cells_intented_length?(first_cell, cell, length_selection) ->
-        {:noreply, "Your boat selection was not right"}
-
       true ->
         boat = Operations.create_boat(first_cell, cell)
 
-        # SEND 'boat' TO GAME
-        # IF IT IS :ok DO
-
-        socket = update_socket_with_boat(boat, socket)
-
-        {:noreply, socket}
+        case GameServer.insert_boat(socket.assigns.game_name, boat) do
+          {_, {:ok, boats}} -> {:noreply, assign(socket, [:you, :boats], boats)}
+          {_, {:error, msg}} -> {:noreply, msg}
+        end
     end
+
+    {:noreply, socket}
   end
 
   def handle_event(
@@ -103,26 +109,39 @@ defmodule BattleshipWeb.PlayerGameLive do
 
     if Operations.is_shot_valid?(cell, shots) do
       update_socket_with_shot(cell, socket)
-      IO.inspect({:noreply, socket})
+      {:noreply, socket}
     else
       {:noreply, "The shot is not valid"}
     end
   end
 
+  # - Handle infos ---------------------
+
+  def handle_info({msg, enemy_boats}, socket) do
+    socket
+    |> assign(:mode, :game)
+    |> assign(:submode, msg)
+    |> assign([:enemy, :boats], enemy_boats)
+  end
+
+  def handle_info(msg, socket) do
+    socket
+    |> assign(:submode, msg)
+  end
+
   # - Events for game state --------------------------
 
-  defp update_socket_with_boat(boat, socket) do
-    length_selection = socket.assigns.you.boat_selected
+  # defp update_socket_with_boat(boat, socket) do
+  #   length_selection = socket.assigns.you.boat_selected
 
-    you =
-      socket.assigns.you
-      |> Map.put(:first_cell_selected, nil)
-      |> Map.put(:boat_selected, nil)
-      |> update_in([:boats], &(&1 ++ [boat]))
-      |> update_in([:boats_left], &List.delete(&1, length_selection))
+  #   you = socket.assigns.you
+  #         |> Map.put(:first_cell_selected, nil)
+  #         |> Map.put(:boat_selected, nil)
+  #         |> update_in([:boats], &(&1 ++ [boat]))
+  #         |> update_in([:boats_left], &List.delete(&1, length_selection))
 
-    assign(socket, :you, you)
-  end
+  #   assign(socket, :you, you)
+  # end
 
   defp update_socket_with_shot(shot, socket) do
     you =

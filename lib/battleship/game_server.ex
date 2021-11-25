@@ -43,7 +43,7 @@ defmodule Battleship.GameServer do
 
       {:ok, new_state} ->
         check_mode_players_ready(new_state)
-        {:reply, {:ok, new_state[player].boats}, new_state}
+        check_player_finish(new_state, player)
     end
   end
 
@@ -61,7 +61,7 @@ defmodule Battleship.GameServer do
         Process.send(
           new_state[Game.other_player(player)].pid,
           {other_turn, new_state[player].shots},
-          :ok
+          [:nosuspend]
         )
 
         {:reply, {active_turn, new_state[player].shots}, new_state}
@@ -72,8 +72,8 @@ defmodule Battleship.GameServer do
 
   defp check_mode_players_ready(state) do
     if state.mode == :player1 do
-      Process.send(state.player1.pid, {:you, state.player2.boats}, :ok)
-      Process.send(state.player2.pid, {:enemy, state.player1.boats}, :ok)
+      Process.send(state.player1.pid, {:you, state.player2.boats}, [:nosuspend])
+      Process.send(state.player2.pid, {:enemy, state.player1.boats}, [:nosuspend])
     else
       nil
     end
@@ -84,6 +84,14 @@ defmodule Battleship.GameServer do
       state.mode == player -> {:you, :enemy}
       state.mode == Game.other_player(player) -> {:enemy, :you}
       true -> {:you_won, :you_lost}
+    end
+  end
+
+  defp check_player_finish(state, player) do
+    if length(state[player].boats) == length(state.available_boats) do
+      {:reply, {:full, state[player].boats}, state}
+    else
+      {:reply, {:ok, state[player].boats}, state}
     end
   end
 end
