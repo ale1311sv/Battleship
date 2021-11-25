@@ -19,14 +19,14 @@ defmodule Battleship.GameServer do
     GenServer.call(game_name, {:shoot, shot})
   end
 
-
- # SERVER FUNCTIONS
+  # SERVER FUNCTIONS
   def init(_) do
-    {:ok, Game.new}
+    {:ok, Game.new()}
   end
 
   def handle_call(:join, from, state) do
     {pid, _} = from
+
     case Game.join(pid, state) do
       {:ok, new_state} -> {:reply, {:ok, "Succesfull conection"}, new_state}
       {:error, message} -> {:reply, {:error, message}, state}
@@ -36,8 +36,10 @@ defmodule Battleship.GameServer do
   def handle_call({:insert_boat, boat}, from, state) do
     {pid, _} = from
     player = Game.player(pid, state)
+
     case Game.insert_boat({boat, pid}, state) do
-      {:error, msg} -> {:reply, {:error, msg}, state}
+      {:error, msg} ->
+        {:reply, {:error, msg}, state}
 
       {:ok, new_state} ->
         check_mode_players_ready(new_state)
@@ -48,12 +50,20 @@ defmodule Battleship.GameServer do
   def handle_call({:shoot, shot}, from, state) do
     {pid, _} = from
     player = Game.player(pid, state)
+
     case Game.shoot({shot, pid}, state) do
-      {:error, msg} -> {:reply, {:error, msg}, state}
+      {:error, msg} ->
+        {:reply, {:error, msg}, state}
 
       {:ok, new_state} ->
         {active_turn, other_turn} = check_mode_after_shot(new_state, player)
-        Process.send(new_state[Game.other_player(player)].pid, {other_turn, new_state[player].shots}, :ok)
+
+        Process.send(
+          new_state[Game.other_player(player)].pid,
+          {other_turn, new_state[player].shots},
+          :ok
+        )
+
         {:reply, {active_turn, new_state[player].shots}, new_state}
     end
   end
