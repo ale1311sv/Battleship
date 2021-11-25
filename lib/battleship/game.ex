@@ -15,6 +15,7 @@ defmodule Battleship.Game do
           mode: atom(),
           available_boats: [pos_integer()]
         }
+  # INITIAL MODE
 
   @spec new :: state()
   def new do
@@ -44,6 +45,7 @@ defmodule Battleship.Game do
     {:error, "Game is full"}
   end
 
+  # SETTING MODE
   def insert_boat({boat, pid}, %{mode: :setting} = state) do
     player = player(pid, state)
 
@@ -70,7 +72,9 @@ defmodule Battleship.Game do
     {:error, "Mode not valid"}
   end
 
+
   # PLAYING MODE
+  @spec shoot({cell, term()}, state) :: {:error, binary} | {:ok, state}
   def shoot({shot, pid}, %{mode: player} = state) when player in [:player1, :player2] do
     cond do
       player(pid, state) == :error -> {:error, "Player not valid"}
@@ -85,16 +89,33 @@ defmodule Battleship.Game do
 
         {:ok, state}
     end
-
   end
 
   def shoot(_, _), do: {:error, "You cannot shot in this mode"}
 
+  # OTHER NECESARY FUNCTIONS
+
+  @spec player(term, state) :: :player1 | :player2 | :error
+  def player(pid, state) do
+    cond do
+      pid == state.player1.pid -> :player1
+      pid == state.player2.pid -> :player2
+      true -> :error
+    end
+  end
+
+  def other_player(:player1), do: :player2
+  def other_player(:player2), do: :player1
+
+  # PRIVATE FUNCTIONS
+
+  @spec both_players_ready?(state) :: boolean
   defp both_players_ready?(state) do
     Operations.all_boats_set?(state.player1.boats, state.available_boats) &&
       Operations.all_boats_set?(state.player2.boats, state.available_boats)
   end
 
+  @spec check_start_playing(state) :: state
   defp check_start_playing(state) do
     if both_players_ready?(state) do
       Map.put(state, :mode, :player1)
@@ -103,6 +124,7 @@ defmodule Battleship.Game do
     end
   end
 
+  @spec check_end_game(state) :: state
   defp check_end_game(state) do
     player = state.mode
     shots = state[player].shots
@@ -114,6 +136,7 @@ defmodule Battleship.Game do
     end
   end
 
+  @spec change_turn_after_shot(state) :: state
   defp change_turn_after_shot(state) do
     player = state.mode
     shot = List.last(state[player].shots)
@@ -124,14 +147,5 @@ defmodule Battleship.Game do
     end
   end
 
-  defp player(pid, state) do
-    cond do
-      pid == state.player1.pid -> :player1
-      pid == state.player2.pid -> :player2
-      true -> :error
-    end
-  end
 
-  defp other_player(:player1), do: :player2
-  defp other_player(:player2), do: :player1
 end
