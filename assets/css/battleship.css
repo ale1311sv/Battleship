@@ -313,6 +313,27 @@ header div.bottom {
   font-size: 4vmin;
 }
 
+/* GAME OVER */
+
+.game_over {
+  background-color: rgba(0, 0, 0, 0.75);
+  border: white solid 5px;
+  font-family: 'KimiHimi';
+  font-size: 4.5vmin;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  color: white;
+  width: 75vmin;
+  height: 40vmin;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 25px;
+}
+
+
 
 
 @media (min-width: 40.0rem) { /* Small devices (landscape phones, 576px and up) */

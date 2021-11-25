@@ -21,7 +21,7 @@ defmodule BattleshipWeb.DrawHelpers do
         ""
 
       is_nil(first_cell_selected) ->
-        if Operations.is_first_cell?(cell, boats),
+        if Operations.is_first_cell?(boat_selected, cell, boats),
           do: "visibly enabled",
           else: "disabled"
 
@@ -90,7 +90,11 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Calculate the effect to overdraw into the content of the cell. A hit or a boat sunk
-  defp effects({row, column}, boats, shots) do
-    IO.puts "NADA"
+  defp effects(cell, boats, shots) do
+    # if Operations.how_is_cell(cell, shots) == :hit do
+    #   if Operations.what_is_cell(cell, boats) == :water, do:
+    # end
+
+    #end
   end
 end

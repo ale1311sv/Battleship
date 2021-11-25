@@ -32,8 +32,7 @@
       <%= for row <- 0..9 do %>
         <%= for column <- 0..9 do %>
           <div class={"cell #{clickable({row, column}, @you.boats, @you.boat_selected, @you.first_cell_selected)} 
-                            #{image({row, column}, @enemy.boats, @you.shots)} 
-                            #{if @you.first_cell_selected == {row, column}, do: "selected"}"}
+                            #{image({row, column}, @enemy.boats, @you.shots)}"}"
           phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div> 
         <% end %>
@@ -50,8 +49,26 @@
 
 <div class="info">
     <%= cond do %>
-    <% @submode == :you -> %> <span>CLICK A CELL TO SHOOT!</span>
-    <% @submode == :enemy -> %> <span>WAIT! IT'S ENEMY'S TURN</span>
+    <% @submode == :you -> %> 
+      <%= cond do %>
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :miss -> %> 
+        <!-- THE FIRST SHOT IN YOUR TURN --><span>IT'S YOUR TURN! CLICK A CELL TO SHOOT</span> 
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :hit -> %> 
+        <!-- THE NEXT SHOTS IN YOUR TURN: HIT --><span>IT WAS A HIT! SHOOT AGAIN</span> 
+      <% Operations.conseq_shots(@you.shots, @enemy.boats) == :sunk -> %> 
+        <!-- THE NEXT SHOTS IN YOUR TURN: SUNK --><span>GREAT! YOU SANK A BOAT. SHOOT AGAIN</span> 
+      <% end %>
+    <% @submode == :enemy -> %> <span>OH, A MISS! IT'S ENEMY'S TURN</span>
     <% true ->  %>
   <% end %>
 </div>
+
+<%= if @submode == :you_won do %>
+  <div class="game_over">
+    <span>ALL THE ENEMY'S BOATS  ARE SUNK. <br><br> YOU'RE THE WINNER!</span>
+  </div>
+<% else %>
+  <div class="game_over">
+    <span>OOH! ALL YOUR BOATS ARE SUNK. <br><br> YOU LOST!</span>
+  </div>
+<% end %>
