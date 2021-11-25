@@ -107,7 +107,7 @@ defmodule Battleship.Operations do
   @doc """
   Function to create a boat from cells WORKS ONLY FOR well defined wannabe boats
   """
-  @spec create_boat({}, {}) :: [{}]
+  @spec create_boat(Game.cell, Game.cell) :: Game.boat
 
   def create_boat(cell1, celln) do
     case cells_alignment(cell1, celln) do
@@ -156,7 +156,7 @@ defmodule Battleship.Operations do
 
   # Function to check if cell is inside grid
   @spec is_cell_valid?(Game.cell()) :: boolean
-  defp is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
+  def is_cell_valid?({x, y}), do: Enum.member?(0..9, x) && Enum.member?(0..9, y)
 
   @spec is_cell_legal?(Game.cell(), [Game.boat()]) :: boolean
   defp is_cell_legal?(cell, boats) do
@@ -197,16 +197,16 @@ defmodule Battleship.Operations do
   end
 
   # Function to set the length of the future boat
-  @spec distance_btw_cells({}, {}) :: integer
+  @spec distance_btw_cells(Game.cell, Game.cell) :: integer
 
-  defp distance_btw_cells(cell1, celln) do
+  def distance_btw_cells(cell1, celln) do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end
 
   # Function to check if LEGAL cells are vertical or horizontal aligned
-  @spec cells_alignment({}, {}) :: atom
+  @spec cells_alignment(Game.cell, Game.cell) :: atom
 
-  defp cells_alignment(cell1, celln) do
+  def cells_alignment(cell1, celln) do
     cond do
       elem(cell1, 0) == elem(celln, 0) -> :horizontal
       elem(cell1, 1) == elem(celln, 1) -> :vertical
@@ -214,9 +214,9 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats horizontal boats invoked by create_boat
-  @spec create_boat_horizontal({}, {}) :: [{}]
+  @spec create_boat_horizontal(Game.cell , Game.cell) :: Game.boat
 
-  defp create_boat_horizontal(cell1, celln) do
+  def create_boat_horizontal(cell1, celln) do
     x = elem(cell1, 0)
     n = distance_btw_cells(cell1, celln)
 
@@ -229,9 +229,9 @@ defmodule Battleship.Operations do
   end
 
   # Function which creats vertical boats invoked by create_boat
-  @spec create_boat_vertical({}, {}) :: [{}]
+  @spec create_boat_vertical(Game.cell, Game.cell ):: Game.boat
 
-  defp create_boat_vertical(cell1, celln) do
+  def create_boat_vertical(cell1, celln) do
     y = elem(cell1, 1)
     n = distance_btw_cells(cell1, celln)
 
@@ -240,7 +240,8 @@ defmodule Battleship.Operations do
       |> Enum.sort()
       |> Enum.at(0)
 
-    for i <- x..(x + y + n), do: {i, y}
+    for i <- x..(x + n), do: {i, y}
+    require IEx;IEx.pry
   end
 
   # Function to check if one shot missed
