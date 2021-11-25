@@ -8,7 +8,7 @@
     <div class = "board">
       <%= for row <- 0..9 do %>
         <%= for column <- 0..9 do %>
-          <div class={"cell #{image({row, column}, @you.boats)}"}
+          <div class={"cell #{image({row, column}, @you.boats, @enemy.shots, :you)}"}
           phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
           </div>
         <% end %>
@@ -31,8 +31,8 @@
     <div class = "board">
       <%= for row <- 0..9 do %>
         <%= for column <- 0..9 do %>
-          <div class={"cell #{clickable({row, column}, @you.boats, @you.boat_selected, @you.first_cell_selected)} 
-                            #{image({row, column}, @enemy.boats, @you.shots)}"}"
+          <div class={"cell #{shootable({row, column}, @you.shots)} 
+                            #{image({row, column}, @enemy.boats, @you.shots, :enemy)}"}"
           phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
         </div> 
         <% end %>
@@ -67,7 +67,8 @@
   <div class="game_over">
     <span>ALL THE ENEMY'S BOATS  ARE SUNK. <br><br> YOU'RE THE WINNER!</span>
   </div>
-<% else %>
+<% end %>
+<%= if @submode == :you_won do %>
   <div class="game_over">
     <span>OOH! ALL YOUR BOATS ARE SUNK. <br><br> YOU LOST!</span>
   </div>

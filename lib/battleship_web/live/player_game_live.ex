@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
       you: %{
         boats_left: [5, 4, 3, 3, 2],
         boats: [[{1, 3}, {1, 4}, {1, 5}], [{2, 9}, {3, 9}]],
-        shots: [{1,1}, {8, 7}, {9, 7}, {7, 7}, {1, 3}, {1, 5}, {2, 7}, {2, 6}],
+        shots: [{1, 1}, {8, 7}, {9, 7}, {7, 7}, {1, 3}, {1, 5}, {2, 7}, {2, 6}],
         first_cell_selected: nil,
         boat_selected: nil
       },
@@ -16,7 +16,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         shots: [{1, 3}, {2, 3}]
       },
       mode: :game,
-      submode: :you_lost
+      submode: :basic
     }
   end
 

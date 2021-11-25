@@ -32,6 +32,10 @@ defmodule BattleshipWeb.DrawHelpers do
     end
   end
 
+  def shootable(cell, shots) do
+    if Operations.is_shot_valid?(cell, shots), do: "enabled", else: "disabled"
+  end
+
   @doc """
   Specifies which actual image will be drawn in the given 'cell', knowing which 'boats' are
   already located in the board.
@@ -47,8 +51,18 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "CONTENT ALIGNMENT EFFECT", for example "boat_body horizontal hit"
   """
-  @spec image(Game.cell, [Game.boats], [Game.cell]) :: String.t()
-  def image(cell, boats, shots), do: "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
+  @spec image(Game.cell, [Game.boats], [Game.cell], atom()) :: String.t()
+  def image(cell, boats, shots, :you) do
+    "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
+  end
+
+  def image(cell, boats, shots, :enemy) do
+    if Operations.how_is_cell(cell, shots) == :unharmed do
+      "secret"
+    else
+      "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
+    end
+  end
 
   # Calculate the drawable content of the cell. If it is a boat, which specific part of the boat
   @spec content(Game.cell(), [Game.boats()]) :: String.t()
@@ -91,9 +105,17 @@ defmodule BattleshipWeb.DrawHelpers do
 
   # Calculate the effect to overdraw into the content of the cell. A hit or a boat sunk
   defp effects(cell, boats, shots) do
-    # if Operations.how_is_cell(cell, shots) == :hit do
-    #   if Operations.what_is_cell(cell, boats) == :water, do:
-    # end
+    content = Operations.what_is_cell(cell, boats)
+    effect = Operations.how_is_cell(cell, shots)
+    #sunk_cells = List.flatten(Operations.sunk_boats(shots, boats))
+    sunk_cells = []
+
+    cond do
+      effect == :hit and content == :water -> "miss"
+      effect == :hit and content == :boat ->
+        if Enum.member?(sunk_cells, cell), do: "sunk", else: "hit"
+      true -> ""
+    end
 
     #end
   end

@@ -65,10 +65,20 @@ header div.bottom {
   background-size: 5vmin;
 }
 
-/*.cell.secret */
+.cell.secret {
+  background-image: url("/images/board/secret.png");
+}
 
 .cell.water {
   background-image: url("/images/board/water.png");
+}
+
+.cell.water.miss {
+  background-image: url("/images/board/miss.png"), url("/images/board/water.png");
+}
+
+.cell.boat_tail.sunk {
+  background-image: url("/images/board/sunk/tail.png");
 }
 
 .cell.boat_tail.hit {
@@ -79,12 +89,20 @@ header div.bottom {
   background-image: url("/images/board/tail.png");
 }
 
+.cell.boat_body.sunk {
+  background-image: url("/images/board/sunk/body.png");
+}
+
 .cell.boat_body.hit {
   background-image: url("/images/board/hit.gif"), url("/images/board/body.png");
 }
 
 .cell.boat_body {
   background-image: url("/images/board/body.png");
+}
+
+.cell.boat_head.sunk {
+  background-image: url("/images/board/sunk/head.png");
 }
 
 .cell.boat_head.hit {
