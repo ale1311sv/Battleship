@@ -51,7 +51,7 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "CONTENT ALIGNMENT EFFECT", for example "boat_body horizontal hit"
   """
-  @spec image(Game.cell, [Game.boats], [Game.cell], atom()) :: String.t()
+  @spec image(Game.cell(), [Game.boats()], [Game.cell()], atom()) :: String.t()
   def image(cell, boats, shots, :you) do
     "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
   end
@@ -109,18 +109,17 @@ defmodule BattleshipWeb.DrawHelpers do
     effect = Operations.how_is_cell(cell, shots)
     sunk_cells = List.flatten(Operations.sunk_boats(shots, boats))
 
-    IO.inspect(shots)
-    IO.inspect(boats)
-    IO.inspect(Operations.sunk_boats(shots, boats))
-    IO.inspect(sunk_cells)
-
     cond do
-      effect == :hit and content == :water -> "miss"
+      effect == :hit and content == :water ->
+        "miss"
+
       effect == :hit and content == :boat ->
         if Enum.member?(sunk_cells, cell), do: "sunk", else: "hit"
-      true -> ""
+
+      true ->
+        ""
     end
 
-    #end
+    # end
   end
 end

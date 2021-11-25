@@ -30,6 +30,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     game_name = Map.get(params, "id") |> String.to_atom()
     socket = assign(socket, new(game_name))
     GameServer.start_link(socket.assigns.game_name)
+
     case GameServer.join(socket.assigns.game_name) do
       {:ok, _msg} -> {:ok, assign(socket, :mode, :setting)}
       {:error, _msg} -> {:ok, assign(socket, :mode, :not_allowed)}
@@ -88,21 +89,25 @@ defmodule BattleshipWeb.PlayerGameLive do
 
       not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
         {:noreply, "Cells selection doesn't match expected length for boat"}
-      true ->
-          boat = Operations.create_boat(first_cell, cell)
-          case GameServer.insert_boat(socket.assigns.game_name, boat) do
-            {:ok, boats} ->
-              you =
-                socket.assigns.you
-                |> Map.put(:first_cell_selected, nil)
-                |> Map.put(:boat_selected, nil)
-                |> Map.put(:boats, boats)
-                |> Map.update!(:boats_left, &(&1 -- [length_selection]))
 
-              {:noreply, assign(socket, :you, you)}
-            {:error, msg} -> {:noreply, msg}
-          end
-      end
+      true ->
+        boat = Operations.create_boat(first_cell, cell)
+
+        case GameServer.insert_boat(socket.assigns.game_name, boat) do
+          {:ok, boats} ->
+            you =
+              socket.assigns.you
+              |> Map.put(:first_cell_selected, nil)
+              |> Map.put(:boat_selected, nil)
+              |> Map.put(:boats, boats)
+              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
+            {:noreply, assign(socket, :you, you)}
+
+          {:error, msg} ->
+            {:noreply, msg}
+        end
+    end
   end
 
   def handle_event(
@@ -133,7 +138,6 @@ defmodule BattleshipWeb.PlayerGameLive do
     else
       {:noreply, "The shot is not valid"}
     end
-
   end
 
   def handle_event("cell_selected", _params, socket), do: {:noreply, socket}
@@ -174,7 +178,6 @@ defmodule BattleshipWeb.PlayerGameLive do
   #         |> update_in([:boats], &(&1 ++ [boat]))
   #         |> update_in([:boats_left], &List.delete(&1, length_selection))
 
-
   #   assign(socket, :you, you)
   # end
 
@@ -184,6 +187,5 @@ defmodule BattleshipWeb.PlayerGameLive do
       |> update_in([:shots], &(&1 ++ [shot]))
 
     assign(socket, :you, you)
-
   end
 end
