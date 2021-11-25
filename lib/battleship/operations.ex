@@ -44,43 +44,24 @@ defmodule Battleship.Operations do
     MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
   end
 
-  @doc """
-  Function to analyse the impact of a received shot in someone's boats
-  """
-  @spec conseq_shots([Game.cell()], [Game.boat()]) :: atom
-  def conseq_shots([shot], boats), do: if( not hit?(shot, boats), do: :miss, else: :hit)
-  def conseq_shots([shot | shots], boats) do
-    if not hit?(shot, boats) do
-      :miss
-    else
-      boats_not_sunk =
-        effects_shots_on_boats(shots, boats)
-        |> Enum.filter(&(length(&1) != 0))
-
-      last_shot_on_boats = effects_shots_on_boats([shot], boats_not_sunk)
-
-      cond do
-        List.flatten(last_shot_on_boats) == [] -> :end
-        Enum.member?(last_shot_on_boats, []) -> :sunk
-        true -> :hit
-      end
-    end
-  end
 
   # PLAYER
   @doc """
   Function to obtain the possible second cells for a given selected cell and a length
   """
-  @spec second_cells(integer, Game.cell(), [Game.boat()]) :: [Game.cell()]
-  def second_cells(length, {x, y}, boats) do
+  @spec second_cells(pos_integer, Game.cell(), [Game.boat()]) :: [Game.cell()]
+  def second_cells(length, cell, boats) do
+    likely_second_cells = likely_second_cells(length, cell)
+  end
+  
+  @spec likely_second_cells(pos_integer, Game.cell) :: boolean
+  defp likely_second_cells(length, {x,y}) do 
     n = length - 1
     vertical = for i <- [x - n, x + n], do: {i, y}
     horizontal = for j <- [y - n, y + n], do: {x, j}
-
-    ((vertical ++ horizontal) -- illegal_cells(boats))
-    |> Enum.filter(&is_cell_valid?(&1))
+    vertical ++ horizontal
+      |> Enum.filter(&is_cell_valid?(&1))
   end
-
   @doc """
   Function to check if cell is inside grid
   """
@@ -138,10 +119,14 @@ defmodule Battleship.Operations do
     end
   end
 
+  @spec last_shot_result([Game.cell], [Game.boat]) :: atom
+
+  def last_shot_result(shots, boats), do: conseq_shots(Enum.reverse(shots), boats)
   @spec is_first_cell?(pos_integer, Game.cell, [Game.boat]) :: boolean
   def is_first_cell?(length_boat_selected, cell, boats) do 
     not Enum.member?(illegal_cells(boats), cell) && will_any_future_boat_fit?(length_boat_selected, cell, boats)
   end
+  
   @doc """
   Function to check if cell is a possible second cell for boat selection given selected cell
   """
@@ -253,4 +238,25 @@ defmodule Battleship.Operations do
 
   defp effects_shots_on_boats(shots, [boat | boats]),
     do: effects_shots_on_boats(shots, [boat]) ++ effects_shots_on_boats(shots, boats)
+    
+  @spec conseq_shots([Game.cell()], [Game.boat()]) :: atom
+  def conseq_shots([], boats), do: :miss
+  def conseq_shots([shot], boats), do: if not hit?(shot, boats), do: :miss, else: :hit
+  def conseq_shots([shot | shots], boats) do
+    if not hit?(shot, boats) do
+      :miss
+    else
+      boats_not_sunk =
+        effects_shots_on_boats(shots, boats)
+        |> Enum.filter(&(length(&1) != 0))
+
+      last_shot_on_boats = effects_shots_on_boats([shot], boats_not_sunk)
+
+      cond do
+        List.flatten(last_shot_on_boats) == [] -> :end
+        Enum.member?(last_shot_on_boats, []) -> :sunk
+        true -> :hit
+      end
+    end
+  end
 end
