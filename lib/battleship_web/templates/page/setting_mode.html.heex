@@ -28,3 +28,10 @@
     <% true -> %> <span>SET YOUR BOAT CLICKING ANOTHER CELL!</span>  <!-- FIRST CELL CLICKED --> 
   <% end %>
 </div>
+
+<%= if @submode == :ready do %>
+  <div class="over_messages">
+    <img src={Routes.static_path(@socket, "/images/waiting.gif")}>
+    <span>Waiting for the enemy to set their boats...</span>
+  </div>
+<% end %>

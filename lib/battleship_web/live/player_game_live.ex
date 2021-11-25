@@ -15,7 +15,7 @@ defmodule BattleshipWeb.PlayerGameLive do
         boats: [[{7, 7}, {8, 7}, {9, 7}], [{2, 7}, {2, 6}]],
         shots: [{1, 3}, {2, 3}]
       },
-      mode: :game,
+      mode: :setting,
       submode: :basic
     }
   end

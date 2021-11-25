@@ -331,9 +331,32 @@ header div.bottom {
   font-size: 4vmin;
 }
 
-/* GAME OVER */
+/* NOT ALLOWED */
 
-.game_over {
+.not-allowed {
+  height: 100%;
+  display: flex;
+  margin: auto;
+  margin-top: 30vmin;
+}
+
+.not-allowed .info .header {
+  padding: 3vmin;
+  font-family: 'KenneyMini';
+  color: white;
+  text-shadow: 2px 2px 0px black;
+  font-size: 6.5vmin;
+}
+
+.not-allowed .info .description {
+  font-family: 'Helvetica';
+  color: white;
+  font-size: 3vmin;
+}
+
+/* OVERLAY MESSAGES */
+
+.over_messages {
   background-color: rgba(0, 0, 0, 0.75);
   border: white solid 5px;
   font-family: 'KimiHimi';
@@ -349,6 +372,11 @@ header div.bottom {
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 25px;
+}
+
+.over_messages img {
+  margin-left: 50px;
+  height: 25vmin;
 }
 
 
