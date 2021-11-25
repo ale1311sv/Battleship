@@ -71,7 +71,6 @@ header div.bottom {
   background-image: url("/images/board/water.png");
 }
 
-
 .cell.boat_tail.hit {
   background-image: url("/images/board/hit.gif"), url("/images/board/tail.png");
 }
@@ -80,8 +79,16 @@ header div.bottom {
   background-image: url("/images/board/tail.png");
 }
 
+.cell.boat_body.hit {
+  background-image: url("/images/board/hit.gif"), url("/images/board/body.png");
+}
+
 .cell.boat_body {
   background-image: url("/images/board/body.png");
+}
+
+.cell.boat_head.hit {
+  background-image: url("/images/board/hit.gif"), url("/images/board/head.png");
 }
 
 .cell.boat_head {
