@@ -215,6 +215,7 @@ defmodule Battleship.Operations do
   end
 
   @spec distance_btw_cells(Game.cell(), Game.cell()) :: non_neg_integer
+
   defp distance_btw_cells(cell1, celln) do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end

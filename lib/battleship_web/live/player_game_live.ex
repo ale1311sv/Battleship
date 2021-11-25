@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       game_name: game_name,
       you: %{
-        boats_left: [5, 4, 3, 3, 2],
+        boats_left: [2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -120,10 +120,12 @@ defmodule BattleshipWeb.PlayerGameLive do
 
     if Operations.is_shot_legal?(cell, shots) do
       case GameServer.shoot(socket.assigns.game_name, cell) do
+
         {:error, _msg} ->
           {:noreply, socket}
 
         {turn, shots} ->
+
           you =
             socket.assigns.you
             |> Map.put(:shots, shots)
@@ -131,6 +133,7 @@ defmodule BattleshipWeb.PlayerGameLive do
           socket =
             socket
             |> assign(:you, you)
+
             |> assign(:submode, turn)
 
           {:noreply, socket}
@@ -139,6 +142,8 @@ defmodule BattleshipWeb.PlayerGameLive do
       {:noreply, "This shot is not valid"}
     end
   end
+
+  def handle_event("cell_selected", _params, socket), do: {:noreply, socket}
 
   # - Handle infos ---------------------
 
@@ -168,6 +173,7 @@ defmodule BattleshipWeb.PlayerGameLive do
 
     {:noreply, socket}
   end
+
 
   # - Events for game state --------------------------
 
