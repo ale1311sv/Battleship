@@ -87,6 +87,9 @@ defmodule BattleshipWeb.PlayerGameLive do
       not Operations.is_it_a_boat?(first_cell, cell) ->
         {:noreply, "Cells selection is illegal"}
 
+      not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
+        {:noreply, "Cells selection doesn't match expected length for boat"}
+
       true ->
         boat = Operations.create_boat(first_cell, cell)
 
