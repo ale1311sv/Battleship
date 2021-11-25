@@ -33,7 +33,7 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   def shootable(cell, shots) do
-    if Operations.is_shot_valid?(cell, shots), do: "enabled", else: "disabled"
+    if Operations.is_shot_legal?(cell, shots), do: "enabled", else: "disabled"
   end
 
   @doc """

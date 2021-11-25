@@ -8,14 +8,14 @@ defmodule BattleshipWeb.PlayerGameLive do
       game_name: game_name,
       you: %{
         boats_left: [5, 4, 3, 3, 2],
-        boats: [[{1, 3}, {1, 4}, {1, 5}], [{2, 9}, {3, 9}]],
-        shots: [{1, 1}, {8, 7}, {9, 7}, {7, 7}, {1, 3}, {1, 5}, {2, 7}, {2, 6}],
+        boats: [],
+        shots: [],
         first_cell_selected: nil,
         boat_selected: nil
       },
       enemy: %{
-        boats: [[{7, 7}, {8, 7}, {9, 7}], [{2, 7}, {2, 6}]],
-        shots: [{1, 3}, {2, 3}]
+        boats: [],
+        shots: []
       },
       mode: nil,
       submode: :basic
@@ -31,8 +31,8 @@ defmodule BattleshipWeb.PlayerGameLive do
     socket = assign(socket, new(game_name))
     GameServer.start_link(socket.assigns.game_name)
     case GameServer.join(socket.assigns.game_name) do
-      {_, {:ok, msg}} -> {:ok, assign(socket, :mode, :setting)}
-      {_, {:error, msg}} -> {:ok, assign(socket, :mode, :not_allowed)}
+      {:ok, _msg} -> {:ok, assign(socket, :mode, :setting)}
+      {:error, _msg} -> {:ok, assign(socket, :mode, :not_allowed)}
     end
   end
 
@@ -86,11 +86,21 @@ defmodule BattleshipWeb.PlayerGameLive do
       not Operations.is_it_a_boat?(first_cell, cell) ->
         {:noreply, "Cells selection is illegal"}
 
+      not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
+        {:noreply, "Cells selection doesn't match expected length for boat"}
       true ->
           boat = Operations.create_boat(first_cell, cell)
           case GameServer.insert_boat(socket.assigns.game_name, boat) do
-            {_, {:ok, boats}} -> {:noreply, assign(socket, [:you, :boats], boats)}
-            {_, {:error, msg}} -> {:noreply, msg}
+            {:ok, boats} ->
+              you =
+                socket.assigns.you
+                |> Map.put(:first_cell_selected, nil)
+                |> Map.put(:boat_selected, nil)
+                |> Map.put(:boats, boats)
+                |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
+              {:noreply, assign(socket, :you, you)}
+            {:error, msg} -> {:noreply, msg}
           end
       end
   end
@@ -103,7 +113,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     cell = {String.to_integer(row), String.to_integer(column)}
     shots = socket.assigns.you.shots
 
-    if Operations.is_shot_valid?(cell, shots) do
+    if Operations.is_shot_legal?(cell, shots) do
       update_socket_with_shot(cell, socket)
       {:noreply, socket}
     else
@@ -115,15 +125,21 @@ defmodule BattleshipWeb.PlayerGameLive do
   # - Handle infos ---------------------
 
   def handle_info({msg, enemy_boats}, socket) do
-    socket
-    |> assign(:mode, :game)
-    |> assign(:submode, msg)
-    |> assign([:enemy, :boats], enemy_boats)
+    socket =
+      socket
+      |> assign(:mode, :game)
+      |> assign(:submode, msg)
+      |> assign([:enemy, :boats], enemy_boats)
+
+    {:noreply, socket}
   end
 
   def handle_info(msg, socket) do
-    socket
-    |> assign(:submode, msg)
+    socket =
+      socket
+      |> assign(:submode, msg)
+
+    {:noreply, socket}
   end
 
   # - Events for game state --------------------------
