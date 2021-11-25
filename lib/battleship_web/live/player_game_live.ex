@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       game_name: game_name,
       you: %{
-        boats_left: [5, 4, 3, 3, 2],
+        boats_left: [2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -30,6 +30,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     game_name = Map.get(params, "id") |> String.to_atom()
     socket = assign(socket, new(game_name))
     GameServer.start_link(socket.assigns.game_name)
+
     case GameServer.join(socket.assigns.game_name) do
       {:ok, _msg} -> {:ok, assign(socket, :mode, :setting)}
       {:error, _msg} -> {:ok, assign(socket, :mode, :not_allowed)}
@@ -88,48 +89,71 @@ defmodule BattleshipWeb.PlayerGameLive do
 
       not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
         {:noreply, "Cells selection doesn't match expected length for boat"}
-      true ->
-          boat = Operations.create_boat(first_cell, cell)
-          case GameServer.insert_boat(socket.assigns.game_name, boat) do
-            {:ok, boats} ->
-              you =
-                socket.assigns.you
-                |> Map.put(:first_cell_selected, nil)
-                |> Map.put(:boat_selected, nil)
-                |> Map.put(:boats, boats)
-                |> Map.update!(:boats_left, &(&1 -- [length_selection]))
 
-              {:noreply, assign(socket, :you, you)}
-            {:error, msg} -> {:noreply, msg}
-          end
-      end
+      true ->
+        boat = Operations.create_boat(first_cell, cell)
+
+        case GameServer.insert_boat(socket.assigns.game_name, boat) do
+          {:ok, boats} ->
+            you =
+              socket.assigns.you
+              |> Map.put(:first_cell_selected, nil)
+              |> Map.put(:boat_selected, nil)
+              |> Map.put(:boats, boats)
+              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
+            {:noreply, assign(socket, :you, you)}
+
+          {:error, msg} ->
+            {:noreply, msg}
+        end
+    end
   end
 
   def handle_event(
         "cell_selected",
         %{"row" => row, "column" => column},
-        %{assigns: %{mode: :game}} = socket
+        %{assigns: %{mode: :game, submode: :you}} = socket
       ) do
     cell = {String.to_integer(row), String.to_integer(column)}
     shots = socket.assigns.you.shots
 
     if Operations.is_shot_legal?(cell, shots) do
-      update_socket_with_shot(cell, socket)
-      {:noreply, socket}
+      case GameServer.shoot(socket.assigns.game_name, cell) do
+        {:error, msg} -> {:noreply, msg}
+        {active_turn, shots} ->
+          IO.inspect(shots)
+          you =
+            socket.assigns.you
+            |> Map.put(:shots, shots)
+
+          socket =
+            socket
+            |> assign(:you, you)
+            |> assign(:submode, active_turn)
+            IO.inspect(socket)
+
+          {:noreply, socket}
+      end
     else
       {:noreply, "The shot is not valid"}
     end
-
   end
+
+  def handle_event("cell_selected", _params, socket), do: {:noreply, socket}
 
   # - Handle infos ---------------------
 
-  def handle_info({msg, enemy_boats}, socket) do
+  def handle_info({turn, enemy_boats}, socket) do
+    enemy =
+      socket.assigns.enemy
+      |> Map.put(:boats, enemy_boats)
+
     socket =
       socket
       |> assign(:mode, :game)
-      |> assign(:submode, msg)
-      |> assign([:enemy, :boats], enemy_boats)
+      |> assign(:submode, turn)
+      |> assign(:enemy, enemy)
 
     {:noreply, socket}
   end
@@ -142,6 +166,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     {:noreply, socket}
   end
 
+
   # - Events for game state --------------------------
 
   # defp update_socket_with_boat(boat, socket) do
@@ -153,7 +178,6 @@ defmodule BattleshipWeb.PlayerGameLive do
   #         |> update_in([:boats], &(&1 ++ [boat]))
   #         |> update_in([:boats_left], &List.delete(&1, length_selection))
 
-
   #   assign(socket, :you, you)
   # end
 
@@ -163,6 +187,5 @@ defmodule BattleshipWeb.PlayerGameLive do
       |> update_in([:shots], &(&1 ++ [shot]))
 
     assign(socket, :you, you)
-
   end
 end
