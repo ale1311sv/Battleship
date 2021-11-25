@@ -146,6 +146,9 @@ defmodule Battleship.Operations do
     end
   end
 
+  @spec is_first_cell?(Game.cell, [Game.boat]) :: boolean
+  def is_first_cell?(cell, boats), do: Enum.member?(illegal_cells(boats), cell)
+
   @doc """
   Function to check if cell is a possible second cell for boat selection given selected cell
   """
