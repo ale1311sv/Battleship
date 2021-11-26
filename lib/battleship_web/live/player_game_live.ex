@@ -26,8 +26,8 @@ defmodule BattleshipWeb.PlayerGameLive do
     BattleshipWeb.PageView.render("player_game_live.html", assigns)
   end
 
-  def mount(params, _session, socket) do
-    game_name = Map.get(params, "id") |> String.to_atom()
+  def mount(%{"id" => id}, _session, socket) do
+    game_name = String.to_atom(id)
     socket = assign(socket, new(game_name))
     GameServer.start_link(socket.assigns.game_name)
 
@@ -105,8 +105,16 @@ defmodule BattleshipWeb.PlayerGameLive do
             {:noreply, assign(socket, :you, you)}
 
           {:full, boats} ->
+            you =
+              socket.assigns.you
+              |> Map.put(:first_cell_selected, nil)
+              |> Map.put(:boat_selected, nil)
+              |> Map.put(:boats, boats)
+              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+
             socket =
               socket
+              |> assign(:you, you)
               |> assign(:submode, :ready)
 
             {:noreply, socket}
