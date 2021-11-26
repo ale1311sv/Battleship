@@ -68,12 +68,12 @@
 </div>
 
 <%= if @submode == :you_won do %>
-  <div class="game_over">
+  <div class="over_messages">
     <span>ALL THE ENEMY'S BOATS  ARE SUNK. <br><br> YOU'RE THE WINNER!</span>
   </div>
 <% end %>
-<%= if @submode == :you_won do %>
-  <div class="game_over">
+<%= if @submode == :you_lost do %>
+  <div class="over_messages">
     <span>OOH! ALL YOUR BOATS ARE SUNK. <br><br> YOU LOST!</span>
   </div>
 <% end %>
