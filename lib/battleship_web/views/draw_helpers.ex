@@ -107,8 +107,9 @@ defmodule BattleshipWeb.DrawHelpers do
   defp effects(cell, boats, shots) do
     content = Operations.what_is_cell(cell, boats)
     effect = Operations.how_is_cell(cell, shots)
-    # sunk_cells = List.flatten(Operations.sunk_boats(shots, boats))
-    sunk_cells = []
+
+    sunk_cells = List.flatten(Operations.sunk_boats(shots, boats))
+
 
     cond do
       effect == :hit and content == :water ->

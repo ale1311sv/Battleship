@@ -231,6 +231,7 @@ defmodule Battleship.Operations do
 
   @spec create_boat_horizontal(Game.cell(), Game.cell()) :: Game.boat()
 
+
   defp create_boat_horizontal(cell1, celln) do
     x = elem(cell1, 0)
     n = distance_btw_cells(cell1, celln)
