@@ -7,7 +7,7 @@ defmodule BattleshipWeb.PlayerGameLive do
     %{
       game_name: game_name,
       you: %{
-        boats_left: [2, 2, 2],
+        boats_left: [5, 4, 3, 3, 2],
         boats: [],
         shots: [],
         first_cell_selected: nil,
@@ -82,13 +82,13 @@ defmodule BattleshipWeb.PlayerGameLive do
 
     cond do
       not Operations.are_cells_valid?(first_cell, cell) ->
-        {:noreply, "One of the cells is out of margin"}
+        {:noreply, socket}
 
       not Operations.is_it_a_boat?(first_cell, cell) ->
-        {:noreply, "Cells selection is illegal"}
+        {:noreply, socket}
 
       not Operations.are_sel_cells_intented_length?(length_selection, first_cell, cell) ->
-        {:noreply, "Cells selection doesn't match expected length for boat"}
+        {:noreply, socket}
 
       true ->
         boat = Operations.create_boat(first_cell, cell)
@@ -105,17 +105,14 @@ defmodule BattleshipWeb.PlayerGameLive do
             {:noreply, assign(socket, :you, you)}
 
           {:full, boats} ->
-            you =
-              socket.assigns.you
-              |> Map.put(:first_cell_selected, nil)
-              |> Map.put(:boat_selected, nil)
-              |> Map.put(:boats, boats)
-              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
+            socket =
+              socket
+              |> assign(:submode, :ready)
 
-            {:noreply, assign(socket, :you, you)}
+            {:noreply, socket}
 
-          {:error, msg} ->
-            {:noreply, msg}
+          {:error, _msg} ->
+            {:noreply, socket}
         end
     end
   end
@@ -148,7 +145,7 @@ defmodule BattleshipWeb.PlayerGameLive do
           {:noreply, socket}
       end
     else
-      {:noreply, "This shot is not valid"}
+      {:noreply, socket}
     end
   end
 
@@ -161,9 +158,14 @@ defmodule BattleshipWeb.PlayerGameLive do
       socket.assigns.enemy
       |> Map.put(:boats, enemy_boats)
 
+    you =
+      socket.assigns.you
+      |> Map.put(:boats_left, [5, 4, 3, 3, 2])
+
     socket =
       socket
       |> assign(:mode, :game)
+      |> assign(:you, you)
       |> assign(:submode, turn)
       |> assign(:enemy, enemy)
 
@@ -198,11 +200,11 @@ defmodule BattleshipWeb.PlayerGameLive do
   #   assign(socket, :you, you)
   # end
 
-  defp update_socket_with_shot(shot, socket) do
-    you =
-      socket.assigns.you
-      |> update_in([:shots], &(&1 ++ [shot]))
+  # defp update_socket_with_shot(shot, socket) do
+  #   you =
+  #     socket.assigns.you
+  #     |> update_in([:shots], &(&1 ++ [shot]))
 
-    assign(socket, :you, you)
-  end
+  #   assign(socket, :you, you)
+  # end
 end
