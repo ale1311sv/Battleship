@@ -2,23 +2,15 @@ defmodule BattleshipWeb.PlayerGameLive do
   use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
   alias Battleship.Operations
   alias Battleship.GameServer
+  alias BattleshipWeb.SettingStruct
+  alias BattleshipWeb.PlayingStruct
+  alias BattleshipWeb.GameOverStruct
 
   def new(game_name) do
     %{
       game_name: game_name,
-      you: %{
-        boats_left: [5, 4, 3, 3, 2],
-        boats: [],
-        shots: [],
-        first_cell_selected: nil,
-        boat_selected: nil
-      },
-      enemy: %{
-        boats: [],
-        shots: []
-      },
       mode: nil,
-      submode: :basic
+      state: nil
     }
   end
 
@@ -29,11 +21,13 @@ defmodule BattleshipWeb.PlayerGameLive do
   def mount(%{"id" => id}, _session, socket) do
     game_name = String.to_atom(id)
     socket = assign(socket, new(game_name))
-    GameServer.start_link(socket.assigns.game_name)
+    {:ok, _} = GameServer.start_link(socket.assigns.game_name)
 
     case GameServer.join(socket.assigns.game_name) do
-      {:ok, _msg} -> {:ok, assign(socket, :mode, :setting)}
-      {:error, _msg} -> {:ok, assign(socket, :mode, :not_allowed)}
+      {:ok, available_boats} ->
+        {:ok, assign(socket, mode: :setting, state: %SettingStruct{available_boats: available_boats, boats_left: available_boats})}
+
+      {:error, _msg} -> {:ok, assign(socket, mode: :not_allowed)}
     end
   end
 
@@ -42,12 +36,11 @@ defmodule BattleshipWeb.PlayerGameLive do
   def handle_event(
         "boat_selected",
         %{"length" => boat_length},
-        %{assigns: %{you: %{boat_selected: nil}}} = socket
+        %{assigns: %{mode: :setting, state: %SettingStruct{first_cell_selected: nil}}} = socket
       ) do
-    new_socket =
-      update(socket, :you, &Map.put(&1, :boat_selected, String.to_integer(boat_length)))
+    state = %{socket.assigns.state | boat_selected: String.to_integer(boat_length)}
 
-    {:noreply, new_socket}
+    {:noreply, assign(socket, state)}
   end
 
   def handle_event("boat_selected", _params, socket) do
@@ -57,7 +50,7 @@ defmodule BattleshipWeb.PlayerGameLive do
   def handle_event(
         "cell_selected",
         _params,
-        %{assigns: %{you: %{boat_selected: nil}, mode: :setting}} = socket
+        %{assigns: %{mode: :setting, state: %SettingStruct{boat_selected: nil}}} = socket
       ) do
     {:noreply, socket}
   end
@@ -65,10 +58,11 @@ defmodule BattleshipWeb.PlayerGameLive do
   def handle_event(
         "cell_selected",
         %{"row" => row, "column" => column},
-        %{assigns: %{you: %{first_cell_selected: nil}, mode: :setting}} = socket
+        %{assigns: %{mode: :setting, state: %SettingStruct{first_cell_selected: nil}}} = socket
       ) do
     cell = {String.to_integer(row), String.to_integer(column)}
-    {:noreply, update(socket, :you, &Map.put(&1, :first_cell_selected, cell))}
+    state = %{socket.assigns.state | first_cell_selected: cell}
+    {:noreply, assign(socket, state)}
   end
 
   def handle_event(
@@ -77,8 +71,8 @@ defmodule BattleshipWeb.PlayerGameLive do
         %{assigns: %{mode: :setting}} = socket
       ) do
     cell = {String.to_integer(row), String.to_integer(column)}
-    first_cell = socket.assigns.you.first_cell_selected
-    length_selection = socket.assigns.you.boat_selected
+    first_cell = socket.assigns.state.first_cell_selected
+    length_selection = socket.assigns.state.boat_selected
 
     cond do
       not Operations.are_cells_valid?(first_cell, cell) ->
@@ -91,47 +85,18 @@ defmodule BattleshipWeb.PlayerGameLive do
         {:noreply, socket}
 
       true ->
-        boat = Operations.create_boat(first_cell, cell)
-
-        case GameServer.insert_boat(socket.assigns.game_name, boat) do
-          {:ok, boats} ->
-            you =
-              socket.assigns.you
-              |> Map.put(:first_cell_selected, nil)
-              |> Map.put(:boat_selected, nil)
-              |> Map.put(:boats, boats)
-              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
-
-            {:noreply, assign(socket, :you, you)}
-
-          {:full, boats} ->
-            you =
-              socket.assigns.you
-              |> Map.put(:first_cell_selected, nil)
-              |> Map.put(:boat_selected, nil)
-              |> Map.put(:boats, boats)
-              |> Map.update!(:boats_left, &(&1 -- [length_selection]))
-
-            socket =
-              socket
-              |> assign(:you, you)
-              |> assign(:submode, :ready)
-
-            {:noreply, socket}
-
-          {:error, _msg} ->
-            {:noreply, socket}
-        end
+        Operations.create_boat(first_cell, cell)
+        |> insert_boat(socket)
     end
   end
 
   def handle_event(
         "cell_selected",
         %{"row" => row, "column" => column},
-        %{assigns: %{mode: :game, submode: :you}} = socket
+        %{assigns: %{mode: :playing}} = socket
       ) do
     cell = {String.to_integer(row), String.to_integer(column)}
-    shots = socket.assigns.you.shots
+    shots = socket.assigns.state.you.shots
 
     if Operations.is_shot_legal?(cell, shots) do
       case GameServer.shoot(socket.assigns.game_name, cell) do
@@ -139,18 +104,24 @@ defmodule BattleshipWeb.PlayerGameLive do
         {:error, _msg} ->
           {:noreply, socket}
 
-        {turn, shots} ->
+        {{turn, false}, shots} ->
 
-          you =
-            socket.assigns.you
-            |> Map.put(:shots, shots)
+          state =
+            socket.assigns.state
+            |> Map.put(:turn, turn)
+            |> put_in([:you, :shots], shots)
 
-          socket =
-            socket
-            |> assign(:you, you)
-            |> assign(:submode, turn)
+          {:noreply, assign(socket, :state, state)}
 
-          {:noreply, socket}
+        {{winner, true}, shots} ->
+
+          state =
+            socket.assigns.state
+            |> put_in([:you, :shots], shots)
+
+          state = %GameOverStruct{winner: winner, you: state.you, enemy: state.enemy}
+
+          {:noreply, assign(socket, mode: :game_over, state: state)}
       end
     else
       {:noreply, socket}
@@ -162,57 +133,72 @@ defmodule BattleshipWeb.PlayerGameLive do
   # - Handle infos ---------------------
 
   def handle_info({turn, enemy_boats}, %{assigns: %{mode: :setting}} = socket) do
+    available_boats = socket.assigns.state.available_boats
+
     enemy =
-      socket.assigns.enemy
+      socket.assigns.state.enemy
+      |> Map.put(:alive_boats, available_boats)
       |> Map.put(:boats, enemy_boats)
 
     you =
       socket.assigns.you
-      |> Map.put(:boats_left, [5, 4, 3, 3, 2])
+      |> Map.put(:alive_boats, available_boats)
 
-    socket =
-      socket
-      |> assign(:mode, :game)
-      |> assign(:you, you)
-      |> assign(:submode, turn)
-      |> assign(:enemy, enemy)
+    state = %PlayingStruct{you: you, enemy: enemy, turn: turn}
 
-    {:noreply, socket}
+    {:noreply, assign(socket, mode: :playing, state: state)}
   end
 
-  def handle_info({turn, enemy_shots}, %{assigns: %{mode: :game}} = socket) do
-    enemy =
-      socket.assigns.enemy
-      |> Map.put(:shots, enemy_shots)
+  def handle_info(msg, %{assigns: %{mode: :playing}} = socket) do
+    case msg do
+      {:error, _msg} ->
+        {:noreply, socket}
 
-    socket =
-      socket
-      |> assign(:submode, turn)
-      |> assign(:enemy, enemy)
+      {{turn, false}, shots} ->
 
-    {:noreply, socket}
+        state =
+          socket.assigns.state
+          |> Map.put(:turn, turn)
+          |> put_in([:enemy, :shots], shots)
+
+        {:noreply, assign(socket, :state, state)}
+
+      {{winner, true}, shots} ->
+
+        state =
+          socket.assigns.state
+          |> put_in([:enemy, :shots], shots)
+
+        state = %GameOverStruct{winner: winner, you: state.you, enemy: state.enemy}
+
+        {:noreply, assign(socket, mode: :game_over, state: state)}
+    end
   end
 
 
   # - Events for game state --------------------------
 
-  # defp update_socket_with_boat(boat, socket) do
-  #   length_selection = socket.assigns.you.boat_selected
+  defp insert_boat(boat, socket) do
+    length_selection = socket.assigns.state.boat_selected
 
-  #   you = socket.assigns.you
-  #         |> Map.put(:first_cell_selected, nil)
-  #         |> Map.put(:boat_selected, nil)
-  #         |> update_in([:boats], &(&1 ++ [boat]))
-  #         |> update_in([:boats_left], &List.delete(&1, length_selection))
+    case GameServer.insert_boat(socket.assigns.game_name, boat) do
+      {:ok, boats} ->
+        state =
+          socket.assigns.state
+          |> Map.put(:first_cell_selected, nil)
+          |> Map.put(:boat_selected, nil)
+          |> Map.put(:boats, boats)
+          |> Map.update!(:boats_left, &(&1 -- [length_selection]))
 
-  #   assign(socket, :you, you)
-  # end
+        if length(socket.assigns.state.boat_left) == 0 do
+          {:noreply, assign(socket, :state,  %{state | ready: true})}
+        else
+          {:noreply, assign(socket, :state, state)}
+        end
 
-  # defp update_socket_with_shot(shot, socket) do
-  #   you =
-  #     socket.assigns.you
-  #     |> update_in([:shots], &(&1 ++ [shot]))
+      {:error, _msg} ->
+        {:noreply, socket}
+    end
+  end
 
-  #   assign(socket, :you, you)
-  # end
 end

@@ -89,10 +89,6 @@ defmodule Battleship.GameServer do
   end
 
   defp check_player_finish(state, player) do
-    if length(state[player].boats) == length(state.available_boats) do
-      {:reply, {:full, state[player].boats}, state}
-    else
       {:reply, {:ok, state[player].boats}, state}
-    end
   end
 end

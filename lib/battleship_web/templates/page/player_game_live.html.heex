@@ -1,5 +1,6 @@
 <%= case @mode do %>
   <% :not_allowed -> %> <%= render("not_allowed_mode.html", assigns) %>
   <% :setting     -> %> <%= render("setting_mode.html", assigns)  %>
-  <% :game        -> %> <%= render("game_mode.html", assigns) %>
+  <% :playing     -> %> <%= render("game_mode.html", assigns) %>
+  <% :game_over   -> %> <%= render("game_mode.html", assigns) %>
 <% end %>
