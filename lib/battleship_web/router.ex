@@ -17,7 +17,7 @@ defmodule BattleshipWeb.Router do
   scope "/", BattleshipWeb do
     pipe_through :browser
 
-    live "/", PlayerGameLive
+    get "/", PageController, :index
     live "/:id", PlayerGameLive
   end
 

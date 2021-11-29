@@ -337,14 +337,14 @@ header div.bottom {
 
 /* NOT ALLOWED */
 
-.not-allowed {
+.generic {
   height: 100%;
   display: flex;
   margin: auto;
   margin-top: 30vmin;
 }
 
-.not-allowed .info .header {
+.generic .info .header {
   padding: 3vmin;
   font-family: 'KenneyMini';
   color: white;
@@ -352,7 +352,13 @@ header div.bottom {
   font-size: 6.5vmin;
 }
 
-.not-allowed .info .description {
+.generic .info .description {
+  font-family: 'Helvetica';
+  color: white;
+  font-size: 3vmin;
+}
+
+.generic .info .description span {
   font-family: 'Helvetica';
   color: white;
   font-size: 3vmin;
