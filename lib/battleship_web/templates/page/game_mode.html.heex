@@ -1,40 +1,32 @@
 <div class = "game panel">
   <div class = "you">
-
     <div class="player_title">
       <span>YOU</span>
     </div>
-
     <div class = "board">
       <%= render("board.html", mode: :playing, player: :you, cell_selected: nil, 
                                boats: @state.you.boats, shots: @state.enemy.shots,
                                board_visibility: :full)%>
     </div>
-
     <div class="fleet">
       <div class="header"> BOATS ALIVE LEFT: </div>
     <%= render("fleet.html", socket: @socket, boats: @state.you.alive_boats, boat_selected: nil) %>
     </div>
-
   </div>
 
   <div class = "enemy">
-    
     <div class="player_title">
       <span>ENEMY</span>
     </div>
-    
     <div class = "board">
       <%= render("board.html", mode: :playing, player: :enemy, cell_selected: nil, 
                                boats: @state.enemy.boats, shots: @state.you.shots,
                                board_visibility: :restricted) %>
     </div>
-    
     <div class="fleet">
       <div class="header"> BOATS ALIVE LEFT: </div>
     <%= render("fleet.html", socket: @socket, boats: @state.enemy.alive_boats, boat_selected: nil) %>
     </div>
-
   </div>
 </div>
 

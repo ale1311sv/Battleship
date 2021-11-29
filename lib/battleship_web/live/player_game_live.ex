@@ -154,8 +154,9 @@ defmodule BattleshipWeb.PlayerGameLive do
     state = %PlayingStruct{you: you, enemy: enemy, turn: turn}
 
     info =
-      if turn == :you, do: "IT'S YOUR TURN! CLICK A CELL TO SHOOT",
-                       else: "GAME BEGINS. IT'S ENEMY'S TURN."
+      if turn == :you,
+        do: "IT'S YOUR TURN! CLICK A CELL TO SHOOT",
+        else: "GAME BEGINS. IT'S ENEMY'S TURN."
 
     {:noreply, assign(socket, mode: :playing, state: state, info: info)}
   end
@@ -289,6 +290,8 @@ defmodule BattleshipWeb.PlayerGameLive do
   defp update_info_panel(socket, :enemy) do
     you_shots = socket.assigns.state.you.shots
 
-    if you_shots == [], do: assign(socket, info: "IT'S ENEMY'S TURN"), else: assign(socket, info: "OH, A MISS! IT'S ENEMY'S TURN")
+    if you_shots == [],
+      do: assign(socket, info: "IT'S ENEMY'S TURN"),
+      else: assign(socket, info: "OH, A MISS! IT'S ENEMY'S TURN")
   end
 end
