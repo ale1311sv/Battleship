@@ -14,59 +14,56 @@ defmodule BattleshipWeb.DrawHelpers do
 
   Returns "enabled" or "disabled"
   """
-  @spec clickable(Game.cell(), [Game.boat()], non_neg_integer(), Game.cell()) :: String.t()
-  def clickable(cell, boats, boat_selected, first_cell_selected) do
+  @spec clickable_class(Game.cell(), map()) :: String.t()
+  def clickable_class(cell, %{mode: :setting} = params) do
     cond do
-      is_nil(boat_selected) ->
+      is_nil(params.boat_selected) ->
         ""
 
-      is_nil(first_cell_selected) ->
-        if Operations.is_first_cell?(boat_selected, cell, boats),
+      is_nil(params.cell_selected) ->
+        if Operations.is_first_cell?(params.boat_selected, cell, params.boats),
           do: "visibly enabled",
           else: "disabled"
 
       true ->
-        if Operations.is_second_cell?(boat_selected, first_cell_selected, cell, boats),
-          do: "visibly enabled",
-          else: "disabled"
+        if Operations.is_second_cell?(
+             params.boat_selected,
+             params.cell_selected,
+             cell,
+             params.boats
+           ),
+           do: "visibly enabled",
+           else: "disabled"
     end
   end
 
-  def shootable(cell, shots) do
-    if Operations.is_shot_legal?(cell, shots), do: "enabled", else: "disabled"
+  def clickable_class(_cell, %{mode: :playing, player: :you}), do: ""
+
+  # def clickable_class(_cell, %{mode: :playing, player: :enemy, turn: :enemy}), do: "disabled"
+
+  def clickable_class(cell, %{mode: :playing, player: :enemy} = params) do
+    if Operations.is_shot_legal?(cell, params.shots), do: "enabled", else: "disabled"
   end
 
   @doc """
-  Specifies which actual image will be drawn in the given 'cell', knowing which 'boats' are
-  already located in the board.
-
-  Returns "CONTENT ALIGNMENT", for example "boat_body horizontal"
   """
-  @spec image(Game.cell(), [Game.boats()]) :: String.t()
-  def image(cell, boats), do: "#{content(cell, boats)} #{alignment(cell, boats)}"
+  def content_class(cell, :full, boats, []),
+    do: "#{element(cell, boats)} #{alignment(cell, boats)}"
 
-  @doc """
-  Specifies which actual image will be drawn in the given 'cell', knowing which 'boats' are
-  already located in the board and the 'shots' executed by the enemy.
+  def content_class(cell, :full, boats, shots),
+    do: "#{element(cell, boats)} #{alignment(cell, boats)} #{effect(cell, boats, shots)}"
 
-  Returns "CONTENT ALIGNMENT EFFECT", for example "boat_body horizontal hit"
-  """
-  @spec image(Game.cell(), [Game.boats()], [Game.cell()], atom()) :: String.t()
-  def image(cell, boats, shots, :you) do
-    "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
-  end
-
-  def image(cell, boats, shots, :enemy) do
+  def content_class(cell, :restricted, boats, shots) do
     if Operations.how_is_cell(cell, shots) == :unharmed do
       "secret"
     else
-      "#{content(cell, boats)} #{alignment(cell, boats)} #{effects(cell, boats, shots)}"
+      "#{element(cell, boats)} #{alignment(cell, boats)} #{effect(cell, boats, shots)} restricted"
     end
   end
 
   # Calculate the drawable content of the cell. If it is a boat, which specific part of the boat
-  @spec content(Game.cell(), [Game.boats()]) :: String.t()
-  defp content({row, column}, boats) do
+  @spec element(Game.cell(), [Game.boats()]) :: String.t()
+  defp element({row, column}, boats) do
     main_cell = Operations.what_is_cell({row, column}, boats)
     left_cell = Operations.what_is_cell({row, column - 1}, boats)
     right_cell = Operations.what_is_cell({row, column + 1}, boats)
@@ -104,16 +101,16 @@ defmodule BattleshipWeb.DrawHelpers do
   end
 
   # Calculate the effect to overdraw into the content of the cell. A hit or a boat sunk
-  defp effects(cell, boats, shots) do
-    content = Operations.what_is_cell(cell, boats)
-    effect = Operations.how_is_cell(cell, shots)
+  defp effect(cell, boats, shots) do
+    cell_element = Operations.what_is_cell(cell, boats)
+    cell_effect = Operations.how_is_cell(cell, shots)
     sunk_cells = List.flatten(Operations.sunk_boats(shots, boats))
 
     cond do
-      effect == :hit and content == :water ->
+      cell_effect == :hit and cell_element == :water ->
         "miss"
 
-      effect == :hit and content == :boat ->
+      cell_effect == :hit and cell_element == :boat ->
         if Enum.member?(sunk_cells, cell), do: "sunk", else: "hit"
 
       true ->

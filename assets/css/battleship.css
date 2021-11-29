@@ -113,6 +113,10 @@ header div.bottom {
   background-image: url("/images/board/head.png");
 }
 
+.cell.hit.restricted {
+  background-image: url("/images/board/hit.gif"), url("/images/board/water.png");
+}
+
 .cell.horizontal {
   transform:rotate(270deg);
 }

@@ -6,18 +6,14 @@
     </div>
 
     <div class = "board">
-      <%= for row <- 0..9 do %>
-        <%= for column <- 0..9 do %>
-          <div class={"cell #{image({row, column}, @you.boats, @enemy.shots, :you)}"}
-          phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
-          </div>
-        <% end %>
-      <% end %>
+      <%= render("board.html", mode: :playing, player: :you, cell_selected: nil, 
+                               boats: @state.you.boats, shots: @state.enemy.shots,
+                               board_visibility: :full)%>
     </div>
 
     <div class="fleet">
       <div class="header"> BOATS ALIVE LEFT: </div>
-      <%=  render("fleet.html", assigns) %>
+    <%= render("fleet.html", socket: @socket, boats: @state.you.alive_boats, boat_selected: nil) %>
     </div>
 
   </div>
@@ -29,51 +25,31 @@
     </div>
     
     <div class = "board">
-      <%= for row <- 0..9 do %>
-        <%= for column <- 0..9 do %>
-          <div class={"cell #{if @submode == :you, do: shootable({row, column}, @you.shots)} 
-                            #{image({row, column}, @enemy.boats, @you.shots, :enemy)}"}"
-          phx-click="cell_selected" phx-value-row={row} phx-value-column={column}}>
-        </div> 
-        <% end %>
-      <% end %>
+      <%= render("board.html", mode: :playing, player: :enemy, cell_selected: nil, 
+                               boats: @state.enemy.boats, shots: @state.you.shots,
+                               board_visibility: :restricted) %>
     </div>
     
     <div class="fleet">
       <div class="header"> BOATS ALIVE LEFT: </div>
-      <%= render("fleet.html", assigns) %>
+    <%= render("fleet.html", socket: @socket, boats: @state.enemy.alive_boats, boat_selected: nil) %>
     </div>
 
   </div>
 </div>
 
 <div class="info">
-    <%= cond do %>
-    <% @submode == :you -> %> 
-      <%= cond do %>
-      <% Operations.last_shot_result(@you.shots, @enemy.boats) == :miss -> %> 
-        <!-- THE FIRST SHOT IN YOUR TURN --><span>IT'S YOUR TURN! CLICK A CELL TO SHOOT</span> 
-      <% Operations.last_shot_result(@you.shots, @enemy.boats) == :hit -> %> 
-        <!-- THE NEXT SHOTS IN YOUR TURN: HIT --><span>IT WAS A HIT! SHOOT AGAIN</span> 
-      <% Operations.last_shot_result(@you.shots, @enemy.boats) == :sunk -> %> 
-        <!-- THE NEXT SHOTS IN YOUR TURN: SUNK --><span>GREAT! YOU SANK A BOAT. SHOOT AGAIN</span> 
-      <% end %>
-    <% @submode == :enemy -> %>
-    <%= cond do %>
-      <% @you.shots == [] -> %> <span>IT'S ENEMY'S TURN</span>
-      <% true -> %> <span>OH, A MISS! IT'S ENEMY'S TURN</span>
-    <% end %>
-    <% true ->  %>
-  <% end %>
+  <span><%= @info %></span>
 </div>
 
-<%= if @submode == :you_won do %>
+<%= if @mode == :game_over do %>
+  <%= if @state.winner == :you do %>
   <div class="over_messages">
     <span>ALL THE ENEMY'S BOATS  ARE SUNK. <br><br> YOU'RE THE WINNER!</span>
   </div>
-<% end %>
-<%= if @submode == :you_lost do %>
+  <% else %>
   <div class="over_messages">
     <span>OOH! ALL YOUR BOATS ARE SUNK. <br><br> YOU LOST!</span>
   </div>
+  <% end %>
 <% end %>
