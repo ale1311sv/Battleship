@@ -4,8 +4,7 @@ defmodule BattleshipWeb.SettingStruct do
             boats_left: [],
             set_boats: [],
             first_cell_selected: nil,
-            boat_selected: nil,
-            info: ""
+            boat_selected: nil
 end
 
 defmodule BattleshipWeb.PlayingStruct do
@@ -19,8 +18,7 @@ defmodule BattleshipWeb.PlayingStruct do
               alive_boats: [],
               boats: [],
               shots: []
-            },
-            info: ""
+            }
 end
 
 defmodule BattleshipWeb.GameOverStruct do

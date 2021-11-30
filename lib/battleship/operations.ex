@@ -2,15 +2,11 @@ defmodule Battleship.Operations do
   alias Battleship.Game
 
   @moduledoc """
+  This module is a support for project Battleship in order to develop essential functions which operate with game data to obtain the result and help understanding of game situation.
 
-  In this module a cell is a duple (tuple of length 2) of integers which is used to represent a matricial space of Battleship grid (set to size 10)
-  Then, a boat is a list of sorted cells determined by its length and its coordinates (represented by cells).
-  There's a shot, which is a cell representing the attempt to hit a boat, but I can land in water (cells of grid which are not part of boats). This will be called a miss.
-  If all cell of a boat are hit, then it's sunk. If all boats are sunk, the game ends.
-
-  valid indicates that element is INSIDE grid
-  legal means that element FOLLOWS rules (e.g. we cannot locate boats adjacently or shoot twice the same spot)
-  available denotes that element is PART of the RESOURCES that aren't yet USED
+  Valid indicates that element is INSIDE grid
+  Legal means that element FOLLOWS rules (e.g. we cannot locate boats adjacently or shoot twice the same spot)
+  Available denotes that element is PART of the RESOURCES that aren't yet USED
   """
 
   # GAME
@@ -55,17 +51,12 @@ defmodule Battleship.Operations do
 
   @spec is_game_end?([Game.cell()], [Game.boat()]) :: boolean
   def is_game_end?(shots, boats) do
-    boats_flatten = List.flatten(boats)
-    MapSet.subset?(MapSet.new(boats_flatten), MapSet.new(shots))
+    List.flatten(boats)
+    |> MapSet.new()
+    |> MapSet.subset?(MapSet.new(shots))
   end
 
   # PLAYER
-  @spec second_cells(pos_integer, Game.cell(), [Game.boat()]) :: [Game.cell()]
-  def second_cells(length, cell, boats) do
-    likely_second_cells(length, cell)
-    |> Enum.filter(&will_future_boat_fit?(cell, &1, boats))
-  end
-
   @spec are_cells_valid?(Game.cell(), Game.cell()) :: boolean
   def are_cells_valid?(cell1, celln), do: is_cell_valid?(cell1) && is_cell_valid?(celln)
 
@@ -73,8 +64,8 @@ defmodule Battleship.Operations do
   def is_it_a_boat?(cell1, celln),
     do: elem(cell1, 0) == elem(celln, 0) or elem(cell1, 1) == elem(celln, 1)
 
-  @spec are_sel_cells_intented_length?(non_neg_integer, Game.cell(), Game.cell()) :: boolean
-  def are_sel_cells_intented_length?(length_boat_selected, cell1, celln),
+  @spec are_sel_cells_intended_length?(non_neg_integer, Game.cell(), Game.cell()) :: boolean
+  def are_sel_cells_intended_length?(length_boat_selected, cell1, celln),
     do: distance_btw_cells(cell1, celln) + 1 == length_boat_selected
 
   @doc """
@@ -139,7 +130,7 @@ defmodule Battleship.Operations do
   last_shot_result(shots, boats) -> :miss, :hit, :sunk or :end
   """
   @spec last_shot_result([Game.cell()], [Game.boat()]) :: atom
-  def last_shot_result(shots, boats), do: conseq_shots(Enum.reverse(shots), boats)
+  def last_shot_result(shots, boats), do: conseq_last_shot(Enum.reverse(shots), boats)
 
   @spec sunk_boats([Game.cell()], [Game.boat()]) :: [Game.boat()]
   def sunk_boats(shots, boats) do
@@ -176,7 +167,6 @@ defmodule Battleship.Operations do
     end
     |> List.flatten()
     |> Enum.uniq()
-    |> Enum.sort()
   end
 
   @spec will_future_boat_fit?(Game.cell(), Game.cell(), [Game.boat()]) :: boolean
@@ -195,6 +185,12 @@ defmodule Battleship.Operations do
     |> Enum.filter(&is_cell_valid?(&1))
   end
 
+  @spec second_cells(pos_integer, Game.cell(), [Game.boat()]) :: [Game.cell()]
+  def second_cells(length, cell, boats) do
+    likely_second_cells(length, cell)
+    |> Enum.filter(&will_future_boat_fit?(cell, &1, boats))
+  end
+
   @spec will_any_future_boat_fit?(pos_integer, Game.cell(), [Game.boat()]) :: boolean
   defp will_any_future_boat_fit?(length_boat_selected, cell, boats) do
     Enum.any?(
@@ -208,7 +204,6 @@ defmodule Battleship.Operations do
     Enum.all?(boat, &is_cell_valid?(&1))
   end
 
-  # Function that returns the available boats for player to locate by their length
   @spec lengths_left([Game.boat()], [pos_integer()]) :: [pos_integer()]
   defp lengths_left(list_boats, available_boats) do
     available_boats -- Enum.map(list_boats, &length(&1))
@@ -220,7 +215,6 @@ defmodule Battleship.Operations do
     abs(elem(cell1, 0) - elem(celln, 0)) + abs(elem(cell1, 1) - elem(celln, 1))
   end
 
-  # Function to check if LEGAL cells are vertical or horizontal aligned
   @spec cells_alignment(Game.cell(), Game.cell()) :: atom
   defp cells_alignment(cell1, celln) do
     cond do
@@ -242,7 +236,6 @@ defmodule Battleship.Operations do
     for j <- y..(y + n), do: {x, j}
   end
 
-  # Function which creats vertical boats invoked by create_boat
   @spec create_boat_vertical(Game.cell(), Game.cell()) :: Game.boat()
   def create_boat_vertical(cell1, celln) do
     y = elem(cell1, 1)
@@ -263,11 +256,11 @@ defmodule Battleship.Operations do
   defp effects_shots_on_boats(shots, [boat | boats]),
     do: effects_shots_on_boats(shots, [boat]) ++ effects_shots_on_boats(shots, boats)
 
-  @spec conseq_shots([Game.cell()], [Game.boat()]) :: atom
-  defp conseq_shots([], _), do: :miss
-  defp conseq_shots([shot], boats), do: if(not hit?(shot, boats), do: :miss, else: :hit)
+  @spec conseq_last_shot([Game.cell()], [Game.boat()]) :: atom
+  defp conseq_last_shot([], _), do: :miss
+  defp conseq_last_shot([shot], boats), do: if(not hit?(shot, boats), do: :miss, else: :hit)
 
-  defp conseq_shots([shot | shots], boats) do
+  defp conseq_last_shot([shot | shots], boats) do
     if not hit?(shot, boats) do
       :miss
     else
