@@ -18,7 +18,7 @@ defmodule Battleship.Game do
       player1: %{boats: [], shots: [], pid: nil},
       player2: %{boats: [], shots: [], pid: nil},
       mode: :initial,
-      available_boats: [2, 2]
+      available_boats: [5, 4, 3, 3, 2]
     }
   end
 

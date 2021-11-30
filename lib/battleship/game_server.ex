@@ -91,4 +91,5 @@ defmodule Battleship.GameServer do
   defp check_player_finish(state, player) do
     {:reply, {:ok, state[player].boats}, state}
   end
+
 end
