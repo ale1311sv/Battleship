@@ -187,7 +187,7 @@ defmodule BattleshipWeb.PlayerGameLive do
           socket.assigns.state
           |> Map.put(:first_cell_selected, nil)
           |> Map.put(:boat_selected, nil)
-          |> Map.put(:boats, boats)
+          |> Map.put(:set_boats, boats)
           |> Map.update!(:boats_left, &(&1 -- [length_selection]))
 
         if length(socket.assigns.state.boat_left) == 0 do
