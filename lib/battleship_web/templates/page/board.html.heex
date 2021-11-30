@@ -1,0 +1,9 @@
+<%= for row <- 0..9 do %>
+  <%= for column <- 0..9 do %>
+    <div class={"cell #{clickable_class({row, column}, assigns)} 
+                      #{content_class({row, column}, @board_visibility, @boats, @shots)} 
+                      #{if @cell_selected == {row, column}, do: "selected"}"}
+      phx-click="cell_selected" phx-value-row={row} phx-value-column={column} phx-value-player={@player}}>
+    </div>
+  <% end %>
+<% end %>

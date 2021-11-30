@@ -28,7 +28,7 @@ defmodule Battleship.GameServer do
     {pid, _} = from
 
     case Game.join(pid, state) do
-      {:ok, new_state} -> {:reply, {:ok, "Succesfull conection"}, new_state}
+      {:ok, new_state} -> {:reply, {:ok, new_state.available_boats}, new_state}
       {:error, message} -> {:reply, {:error, message}, state}
     end
   end
@@ -57,15 +57,15 @@ defmodule Battleship.GameServer do
         {:reply, {:error, msg}, state}
 
       {:ok, new_state} ->
-        {active_turn, other_turn} = check_mode_after_shot(new_state, player)
+        {active_turn, other_turn, end_game?} = check_mode_after_shot(new_state, player)
 
         Process.send(
           new_state[Game.other_player(player)].pid,
-          {other_turn, new_state[player].shots},
+          {other_turn, end_game?, new_state[player].shots},
           []
         )
 
-        {:reply, {active_turn, new_state[player].shots}, new_state}
+        {:reply, {active_turn, end_game?, new_state[player].shots}, new_state}
     end
   end
 
@@ -82,17 +82,13 @@ defmodule Battleship.GameServer do
 
   defp check_mode_after_shot(state, player) do
     cond do
-      state.mode == player -> {:you, :enemy}
-      state.mode == Game.other_player(player) -> {:enemy, :you}
-      true -> {:you_won, :you_lost}
+      state.mode == player -> {:you, :enemy, false}
+      state.mode == Game.other_player(player) -> {:enemy, :you, false}
+      true -> {:you, :enemy, true}
     end
   end
 
   defp check_player_finish(state, player) do
-    if length(state[player].boats) == length(state.available_boats) do
-      {:reply, {:full, state[player].boats}, state}
-    else
-      {:reply, {:ok, state[player].boats}, state}
-    end
+    {:reply, {:ok, state[player].boats}, state}
   end
 end
