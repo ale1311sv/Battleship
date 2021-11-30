@@ -10,7 +10,7 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :battleship, BattleshipWeb.Endpoint,
-url: [scheme: "https", host: "battleshipsquid.herokuapp.com", port: 443],
+url: [scheme: "https", host: "doofinder-battleship.herokuapp.com", port: 443],
 force_ssl: [rewrite_on: [:x_forwarded_proto]],
 cache_static_manifest: "priv/static/cache_manifest.json"
 
