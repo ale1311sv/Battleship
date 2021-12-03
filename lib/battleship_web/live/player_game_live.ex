@@ -1,5 +1,5 @@
 defmodule BattleshipWeb.PlayerGameLive do
-  use Phoenix.LiveView, layout: {BattleshipWeb.LayoutView, "live.html"}
+  use BattleshipWeb, :live_view
   alias Battleship.Operations
   alias Battleship.GameServer
   alias BattleshipWeb.SettingStruct
